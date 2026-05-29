@@ -1,0 +1,17 @@
+---
+// src/components/SpokeHeader.astro
+const { num, label, intro } = Astro.props as { num: string; label: string; intro: string };
+---
+<header class="spoke-head">
+  <div class="wrap">
+    <p class="section-num">{num}</p>
+    <h1 class="spoke-head__h">{label}</h1>
+    <p class="spoke-head__intro">{intro}</p>
+  </div>
+</header>
+<style>
+  .spoke-head { background: var(--accent); color: #fff; padding-block: 3rem 2.5rem; }
+  .spoke-head .section-num { color: #fff; opacity: .8; }
+  .spoke-head__h { font-size: var(--fs-mega); }
+  .spoke-head__intro { max-width: 46rem; font-size: 1.25rem; margin-top: .5rem; }
+</style>

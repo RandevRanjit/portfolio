@@ -1,0 +1,23 @@
+---
+import { site } from '../data/site';
+import TermRule from './TermRule.astro';
+---
+<TermRule />
+<footer class="footer wrap">
+  <div>
+    <p class="label">{site.location}</p>
+    <p>{site.name} — {site.spine}</p>
+  </div>
+  <ul class="footer__links">
+    <li><a href={site.links.github}>GitHub</a></li>
+    <li><a href={site.links.linkedin}>LinkedIn</a></li>
+    <li><a href={site.links.email}>Email</a></li>
+    <li><a href={site.links.portfolioPdf}>Portfolio PDF</a></li>
+    <li><a href={site.links.cvPdf}>CV</a></li>
+  </ul>
+  <p class="label">Built with Astro · source on GitHub</p>
+</footer>
+<style>
+  .footer { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; padding-block: 2rem 3rem; }
+  .footer__links { display: flex; gap: 1rem; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+</style>

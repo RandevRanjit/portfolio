@@ -1,0 +1,89 @@
+---
+// src/components/AsciiPanel.astro
+// Decorative ASCII device faceplate — aria-hidden, purely visual
+---
+<div class="ascii-panel" aria-hidden="true">
+  <div class="ascii-panel__inner">
+    <span class="ln">+=[ RR ]====================+</span>
+    <span class="ln">| silicon <span class="arrow">-&gt;</span> software       |</span>
+    <span class="ln">| <span class="n n--fin">01 FIN</span>  <span class="n n--drn">02 DRN</span>  <span class="n n--mtr">03 MTR</span>    |</span>
+    <span class="ln ln--bar">| <span class="bar-wrap">[<span class="bar-fill"></span><span class="bar-empty">........</span>]</span> <span class="bar-label">scan</span>   |</span>
+    <span class="ln">+===========================+</span>
+  </div>
+</div>
+
+<style>
+  .ascii-panel {
+    font-family: var(--font-display);
+    font-size: clamp(0.65rem, 1.8vw, 0.85rem);
+    line-height: 1.6;
+    color: var(--ink);
+    /* allow horizontal scroll on very small screens rather than overflow-breaking layout */
+    overflow-x: auto;
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  .ascii-panel__inner {
+    display: inline-flex;
+    flex-direction: column;
+    white-space: pre;
+  }
+  .ln { display: block; }
+
+  /* Spoke number accent colours */
+  .n--fin { color: var(--accent-finance); }
+  .n--drn { color: var(--accent-drone); }
+  .n--mtr { color: var(--accent-motor); }
+  .arrow  { color: var(--grey); }
+
+  /* Scan bar */
+  .bar-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+  }
+  .bar-fill {
+    display: inline-block;
+    /* We animate width between 0 and 8 chars worth of pipe glyphs */
+    overflow: hidden;
+    vertical-align: bottom;
+    white-space: nowrap;
+    color: var(--accent-finance);
+    /* content injected via ::after so we can truncate */
+    width: 0;
+    animation: scanbar 2.5s linear infinite;
+  }
+  .bar-fill::after {
+    content: '||||||||';
+  }
+  .bar-empty {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    white-space: nowrap;
+    color: var(--grey);
+    width: 8ch;
+    animation: scanhole 2.5s linear infinite;
+  }
+  .bar-empty::after {
+    content: '........';
+  }
+  .bar-label { color: var(--grey); }
+
+  @keyframes scanbar {
+    0%   { width: 0ch; }
+    80%  { width: 8ch; }
+    100% { width: 8ch; }
+  }
+  @keyframes scanhole {
+    0%   { width: 8ch; }
+    80%  { width: 0ch; }
+    100% { width: 0ch; }
+  }
+
+  /* Reduced motion: show static filled bar, no animation */
+  @media (prefers-reduced-motion: reduce) {
+    .bar-fill  { animation: none; width: 8ch; }
+    .bar-empty { animation: none; width: 0ch; }
+  }
+</style>

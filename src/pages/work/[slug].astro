@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MetricBlock from '../../components/MetricBlock.astro';
+import AsciiAnim from '../../components/AsciiAnim.astro';
+import TermRule from '../../components/TermRule.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const all = await getCollection('projects');
+  return all.map((p) => ({ params: { slug: p.id }, props: { p } }));
+}
+const { p } = Astro.props;
+const { Content } = await render(p);
+const d = p.data;
+// pick a spoke colour for the page from its first spoke
+const primarySpoke = d.spokes[0]?.id;
+---
+<BaseLayout title={d.title} description={d.tagline} spoke={primarySpoke}>
+  <article class="wrap reveal" style="padding-block:2.5rem 3.5rem; max-width:52rem;">
+    <p class="section-num">{String(d.order).padStart(2, '0')} / {d.buckets.join(' · ').toUpperCase()}</p>
+    <h1 style="font-size:var(--fs-h1)">{d.title}</h1>
+    <p style="font-size:1.25rem">{d.tagline}</p>
+    <AsciiAnim slug={p.id} size="hero" />
+    <ul class="stack">{d.stack.map((s) => <li class="label">{s}</li>)}</ul>
+    <MetricBlock metrics={d.metrics} />
+    {d.images.map((im) => (
+      <figure><img src={im.src} alt={im.alt} loading="lazy" />{im.caption && <figcaption class="label">{im.caption}</figcaption>}</figure>
+    ))}
+    <div class="prose"><Content /></div>
+    <div style="margin-top:2rem;"><TermRule /></div>
+    <p class="label">ROLE</p><p>{d.role}</p>
+    <p class="label">DATES / {d.dates}</p>
+    {d.repo.kind === 'public' && d.repo.url && <p><a href={d.repo.url}>View source on GitHub →</a></p>}
+    {d.repo.kind !== 'public' && <p class="label">{d.repo.kind === 'private' ? 'Private repository' : 'Case study — private UoM coursework, no code link'}</p>}
+  </article>
+</BaseLayout>
+<style>
+  .stack { display:flex; flex-wrap:wrap; gap:.5rem; list-style:none; padding:0; margin:1rem 0; }
+  .prose :global(p) { margin: 1rem 0; }
+  figure { margin: 1.5rem 0; } img { max-width:100%; height:auto; border:2px solid var(--ink); }
+</style>

@@ -1,0 +1,40 @@
+---
+// src/components/SpokeBody.astro
+import SpokeHeader from './SpokeHeader.astro';
+import ProjectCard from './ProjectCard.astro';
+import { getCollection } from 'astro:content';
+import { spokes, type SpokeId } from '../data/spokes';
+
+const { id, num } = Astro.props as { id: SpokeId; num: string };
+const spoke = spokes[id];
+const all = await getCollection('projects');
+const byId = new Map(all.map((p) => [p.id, p]));
+const ordered = spoke.order.map((slug) => byId.get(slug)).filter(Boolean);
+---
+<SpokeHeader num={num} label={spoke.label} intro={spoke.intro} />
+<section class="wrap" style="padding-block:2.5rem;">
+  <div class="grid">
+    {ordered.map((p, i) => {
+      const sp = p!.data.spokes.find((s) => s.id === id);
+      return (
+        <div class="reveal" style={`transition-delay:${i * 80}ms`}>
+          <ProjectCard num={String(i + 1).padStart(2, '0')} slug={p!.id}
+            title={p!.data.title} tagline={p!.data.tagline} stack={p!.data.stack}
+            blurb={sp?.blurb} repoKind={p!.data.repo.kind} />
+        </div>
+      );
+    })}
+  </div>
+  {spoke.gaps && (
+    <div class="gaps">
+      <p class="section-num">NEXT / WHAT I'D BUILD</p>
+      <ul>{spoke.gaps.map((g) => <li>{g}</li>)}</ul>
+    </div>
+  )}
+</section>
+<style>
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(18rem,1fr)); gap:1.25rem; }
+  .grid > .reveal { height:100%; }
+  .gaps { margin-top:2.5rem; border-top:var(--rule) solid var(--ink); padding-top:1rem; }
+  .gaps ul { font-family:var(--font-mono); }
+</style>

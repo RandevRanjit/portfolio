@@ -1,0 +1,18 @@
+---
+// src/components/MetricBlock.astro — mono metric chips, source as title tooltip
+const { metrics } = Astro.props as { metrics: { label: string; value: string; source: string }[] };
+---
+<dl class="metrics">
+  {metrics.map((m) => (
+    <div class="metric" title={`source: ${m.source}`}>
+      <dt class="label">{m.label}</dt>
+      <dd class="metric__v mono">{m.value}</dd>
+    </div>
+  ))}
+</dl>
+<style>
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0; margin: 1rem 0; border: 2px solid var(--ink); }
+  .metric { padding: .75rem .9rem; border-right: 2px solid var(--ink); }
+  .metric:last-child { border-right: 0; }
+  .metric__v { font-size: 1.35rem; font-weight: 600; color: var(--accent); }
+</style>

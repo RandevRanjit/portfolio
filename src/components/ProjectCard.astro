@@ -1,0 +1,30 @@
+---
+// src/components/ProjectCard.astro
+import AsciiAnim from './AsciiAnim.astro';
+const { num, slug, title, tagline, stack, blurb, repoKind } = Astro.props as {
+  num: string; slug: string; title: string; tagline: string; stack: string[]; blurb?: string; repoKind: string;
+};
+---
+<a class="card" href={`/work/${slug}`}>
+  <span class="card__num section-num">{num}</span>
+  <span class="card__edge" aria-hidden="true"></span>
+  <AsciiAnim slug={slug} size="card" />
+  <h3 class="card__title">{title}</h3>
+  <p class="card__tag">{blurb ?? tagline}</p>
+  <ul class="card__stack">{stack.slice(0, 4).map((s) => <li class="label">{s}</li>)}</ul>
+  {repoKind !== 'public' && <span class="label card__cs">case study</span>}
+</a>
+<style>
+  .card { position: relative; display: flex; flex-direction: column; height: 100%;
+          text-decoration: none; color: var(--ink);
+          border: 2px solid var(--ink); padding: 1.5rem; background: var(--paper);
+          transition: transform .12s ease, box-shadow .12s ease; }
+  .card:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--accent); }
+  .card__num { display: block; font-weight: 600; margin-bottom: .25rem; }
+  .card__edge { position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--accent); }
+  .card__title { font-size: 1.4rem; line-height: 1.1; margin: .15rem 0 .6rem; }
+  .card__tag { margin: 0 0 1rem; }
+  /* stack pinned to the bottom so every card's footer aligns regardless of tagline length */
+  .card__stack { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: auto 0 0; }
+  .card__cs { display: inline-block; margin-top: .6rem; }
+</style>

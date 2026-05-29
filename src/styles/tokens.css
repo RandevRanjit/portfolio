@@ -1,0 +1,44 @@
+/* src/styles/tokens.css — Teenage-Engineering / product system */
+:root {
+  color-scheme: light;
+
+  --ink: #111111;
+  --paper: #f4f1ea;
+  --paper-2: #ebe7dc;
+  --grey: #8a857a;
+  --line: #d9d4c7;
+
+  --accent: var(--ink);
+  --accent-finance: #1e40ff;
+  --accent-drone:   #ff4f00;
+  --accent-motor:   #e1261c;
+
+  --font-display: 'Departure Mono', ui-monospace, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-body: 'Inter Variable', system-ui, sans-serif;
+
+  --fs-mega: clamp(3rem, 9vw, 7rem);
+  --fs-h1: clamp(2rem, 5vw, 3.5rem);
+  --fs-h2: clamp(1.5rem, 3vw, 2.25rem);
+  --fs-body: 1.0625rem;
+  --fs-label: 0.78rem;
+
+  --space: 1rem;
+  --maxw: 76rem;
+  --rule: 3px;
+  --radius: 0;
+}
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #ece7da;
+  --paper: #100f0d;
+  --paper-2: #1a1815;
+  --grey: #8f897c;
+  --line: #2c2823;
+  --accent-finance: #5b78ff;
+  --accent-drone:   #ff6a2b;
+  --accent-motor:   #ff4438;
+}
+[data-spoke='finance'] { --accent: var(--accent-finance); }
+[data-spoke='drone']   { --accent: var(--accent-drone); }
+[data-spoke='motorsport'] { --accent: var(--accent-motor); }

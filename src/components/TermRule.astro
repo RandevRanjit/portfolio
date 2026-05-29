@@ -1,0 +1,22 @@
+---
+// src/components/TermRule.astro — terminal-style ASCII divider: +==============+
+// Caps stay at the ends; the middle fill clips via overflow, so it spans any width.
+---
+<div class="termrule" aria-hidden="true"><span class="termrule__cap">+</span><span class="termrule__fill">==================================================================================================================================================================================================================================================================================================================================</span><span class="termrule__cap">+</span></div>
+<style>
+  .termrule {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    font-family: var(--font-mono);
+    color: var(--ink);
+    font-size: 0.85rem;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    user-select: none;
+    margin: 0;
+  }
+  .termrule__cap { flex: 0 0 auto; }
+  .termrule__fill { flex: 1 1 auto; overflow: hidden; }
+</style>

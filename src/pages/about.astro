@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SkillsMatrix from '../components/SkillsMatrix.astro';
+import { site } from '../data/site';
+const timeline = [
+  { when: '2023–2026', what: site.bsc + ' — hardware track: SoC design, processor microarchitecture, multicore computing, computer architecture, microcontrollers, digital logic + Verilog.' },
+  { when: 'Jun–Aug 2025', what: 'AI / Software Engineering Intern, CarrLane Manufacturing (Chennai).' },
+  { when: 'Sept 2026–2028', what: 'Incoming — ' + site.msc + '.' },
+];
+---
+<BaseLayout title="About" description="About Randev Ranjit">
+  <section class="wrap" style="padding-block:2.5rem; max-width:52rem;">
+    <p class="section-num">ABOUT / 00</p>
+    <h1 style="font-size:var(--fs-h1)">{site.spine}</h1>
+    <p>I build systems where the constraints are real — timing, determinism, and correctness you prove rather than assume. I like turning physics-grounded models into engineered, instrumented, testable algorithms, and I learn at the hardware–software boundary: from FPGA RTL closed on real silicon to low-latency Rust and C++.</p>
+    <p>That instinct shows up across three fields — quantitative finance, drones &amp; music tech, and motorsport — but the work underneath is the same: make it fast, make it correct, make it real-time.</p>
+
+    <p class="section-num" style="margin-top:2rem;">TIMELINE</p>
+    <dl class="tl">
+      {timeline.map((t) => (<div class="tl__row"><dt class="label mono">{t.when}</dt><dd>{t.what}</dd></div>))}
+    </dl>
+
+    <p class="section-num" style="margin-top:2rem;">SKILLS</p>
+    <SkillsMatrix />
+
+    <p style="margin-top:2rem;">
+      <a href={site.links.github}>GitHub</a> · <a href={site.links.linkedin}>LinkedIn</a> ·
+      <a href={site.links.email}>Email</a> · <a href={site.links.portfolioPdf}>Portfolio PDF</a> · <a href={site.links.cvPdf}>CV</a>
+    </p>
+  </section>
+</BaseLayout>
+<style>
+  .tl { margin:0; } .tl__row { display:grid; grid-template-columns:10rem 1fr; gap:1rem; padding:.75rem 0; border-bottom:2px solid var(--line); }
+  @media (max-width:640px){ .tl__row { grid-template-columns:1fr; gap:.2rem; } }
+</style>

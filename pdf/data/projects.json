@@ -1,0 +1,566 @@
+{
+  "projects": [
+    {
+      "title": "Quant Trading System (Automaton-QTS)",
+      "tagline": "Multi-signal trading engine with a tick-level, queue-position-aware HFT backtester.",
+      "order": 1,
+      "buckets": [
+        "systems",
+        "control"
+      ],
+      "spokes": [
+        {
+          "id": "finance",
+          "role": "flagship",
+          "blurb": "Tick-level HFT backtester (50 µs latency) + regime-gated cross-asset propagation graph."
+        }
+      ],
+      "stack": [
+        "Python",
+        "NautilusTrader",
+        "hftbacktest",
+        "PyTorch",
+        "TimescaleDB"
+      ],
+      "metrics": [
+        {
+          "label": "Code",
+          "value": "40.9k LOC",
+          "source": "audit §automaton-qts (git ls-files)"
+        },
+        {
+          "label": "Coverage",
+          "value": "81.9%",
+          "source": "audit §automaton-qts (coverage.xml:2)"
+        },
+        {
+          "label": "Sim order latency",
+          "value": "50 µs",
+          "source": "audit §automaton-qts (hft_backtest.py:242)"
+        }
+      ],
+      "role": "Sole author. Built the signal pipeline, risk engine (hard circuit breakers), dual backtester, and the regime-gated propagation-graph research module.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/Automaton-QTS"
+      },
+      "dates": "2026"
+    },
+    {
+      "title": "Cellular-Automaton SoC Accelerator",
+      "tagline": "A self-designed programmable Wolfram-rule accelerator on a RISC-V SoC — synthesised, implemented, demoed live on FPGA.",
+      "order": 2,
+      "buckets": [
+        "hardware"
+      ],
+      "spokes": [
+        {
+          "id": "finance",
+          "role": "flagship",
+          "blurb": "Custom datapath accelerator closed on Artix-7 — the FPGA→HFT-hardware story."
+        },
+        {
+          "id": "drone",
+          "role": "secondary",
+          "blurb": "Embedded hardware design: custom accelerator integrated into a RISC-V SoC with live video out."
+        }
+      ],
+      "stack": [
+        "SystemVerilog",
+        "Vivado",
+        "Artix-7",
+        "RISC-V"
+      ],
+      "metrics": [
+        {
+          "label": "Accelerator",
+          "value": "4,433 LUT / 1,467 FF",
+          "source": "audit §comp32211 FINAL (Phase 4 report Tables 1–3)"
+        },
+        {
+          "label": "Whole SoC",
+          "value": "43.81% LUT · 96% BRAM",
+          "source": "audit §comp32211 FINAL (Phase 4 report)"
+        },
+        {
+          "label": "Rules",
+          "value": "256 runtime-selectable",
+          "source": "audit §comp32211 (unit_automaton.sv:277-283)"
+        }
+      ],
+      "role": "Designed the unit_automaton accelerator (rule-as-lookup, 32-bit LFSR seed, compute/write FSM, byte-enabled framestore writes), integrated it into the drawing engine, drove it from a RISC-V MMIO program, and took it through Vivado synthesis + implementation.",
+      "status": "case-study",
+      "repo": {
+        "kind": "case-study"
+      },
+      "dates": "2025–26"
+    },
+    {
+      "title": "Aero-Lab — Quadrotor Flight Simulator",
+      "tagline": "From-scratch RK4 rigid-body dynamics with a cascaded PID + differential-flatness controller.",
+      "order": 3,
+      "buckets": [
+        "control"
+      ],
+      "spokes": [
+        {
+          "id": "drone",
+          "role": "flagship",
+          "blurb": "A full quadrotor flight stack — physics and controller hand-rolled, 322 tests."
+        },
+        {
+          "id": "motorsport",
+          "role": "secondary",
+          "blurb": "Differential-flatness control and a Gymnasium racing env — transferable control engineering."
+        }
+      ],
+      "stack": [
+        "Python",
+        "NumPy",
+        "Gymnasium",
+        "SciPy"
+      ],
+      "metrics": [
+        {
+          "label": "Code",
+          "value": "~15.9k LOC",
+          "source": "audit §aero-lab"
+        },
+        {
+          "label": "Tests",
+          "value": "322 functions",
+          "source": "audit §aero-lab (def test_ count)"
+        },
+        {
+          "label": "Controller",
+          "value": "PID + diff-flatness",
+          "source": "audit §aero-lab (pid_dfbc/controller.py)"
+        }
+      ],
+      "role": "Sole author. Hand-rolled the 6-DOF physics (RK4, motor lag, gyroscopic torque, aero drag), the cascaded PID + differential-flatness feedforward controller, and the mixer pseudo-inverse.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/Aero-Lab"
+      },
+      "dates": "2026"
+    },
+    {
+      "title": "Interpretable MPCC Racing Controller",
+      "tagline": "Final-year dissertation — model-predictive contouring control on a Fiala-tire bicycle plant.",
+      "order": 4,
+      "buckets": [
+        "control"
+      ],
+      "spokes": [
+        {
+          "id": "motorsport",
+          "role": "flagship",
+          "blurb": "Graduate-level MPC: CasADi/IPOPT MPCC with JIT + dual warm-start vs RRHC/DDP."
+        }
+      ],
+      "stack": [
+        "Python",
+        "CasADi",
+        "IPOPT",
+        "SciPy"
+      ],
+      "metrics": [
+        {
+          "label": "Horizon",
+          "value": "N=20 @ dt=0.02s",
+          "source": "audit §racing-lab-tyd (mpcc/ocp.py)"
+        },
+        {
+          "label": "Solver step",
+          "value": "19.77 ms mean",
+          "source": "audit §racing-lab-tyd (debug.csv, 3,163 steps)"
+        },
+        {
+          "label": "Integrator",
+          "value": "Radau IIA (implicit)",
+          "source": "audit §racing-lab-tyd (integrator.py)"
+        }
+      ],
+      "role": "Sole author (dissertation). Built the MPCC OCP, dual warm-starting, JIT compilation, the Fiala-tire plant, and the comparison harness against RRHC and DDP.",
+      "status": "case-study",
+      "repo": {
+        "kind": "private"
+      },
+      "dates": "2025–26"
+    },
+    {
+      "title": "Stump CPU — Spartan-6 RISC Processor",
+      "tagline": "Complete 16-bit multi-cycle RISC CPU hand-built in Verilog and closed on real Spartan-6 silicon at 98% slice occupancy.",
+      "order": 5,
+      "buckets": [
+        "hardware"
+      ],
+      "spokes": [
+        {
+          "id": "finance",
+          "role": "flagship",
+          "blurb": "Stump RISC CPU synthesised + placed-and-routed on Spartan-6 — timing met at 98% slice occupancy. The FPGA→HFT hardware story starts here."
+        },
+        {
+          "id": "drone",
+          "role": "secondary",
+          "blurb": "Bottom-up processor design: datapath, FSM, ALU, regfile — the hardware track that feeds every embedded project."
+        }
+      ],
+      "stack": [
+        "Verilog",
+        "Xilinx ISE",
+        "Spartan-6"
+      ],
+      "metrics": [
+        {
+          "label": "Slice LUTs",
+          "value": "2,068 / 2,400 (86%)",
+          "source": "audit §comp22111 (Stump_Board.mrp:24)"
+        },
+        {
+          "label": "Occupied Slices",
+          "value": "591 / 600 (98%)",
+          "source": "audit §comp22111 (Stump_Board.mrp:37)"
+        },
+        {
+          "label": "Timing score",
+          "value": "0 — all constraints met",
+          "source": "audit §comp22111 (Stump_Board.par:152)"
+        }
+      ],
+      "role": "Designed the datapath (ALU, shifter, sign-extender, 8×16-bit register file, muxes), the 3-state control FSM (FETCH/EXECUTE/MEMORY), and the instruction decoder. Wrote Battleship in Stump assembly against a memory-mapped 8×8 LED matrix.",
+      "status": "case-study",
+      "repo": {
+        "kind": "case-study"
+      },
+      "dates": "2024–25"
+    },
+    {
+      "title": "Multicore Computing Labs",
+      "tagline": "Measured parallelism on 72 cores — NUMA-aware pthreads, fine-grained spinlock dining philosophers, and a temporal-blocking stencil.",
+      "order": 6,
+      "buckets": [
+        "systems"
+      ],
+      "spokes": [
+        {
+          "id": "finance",
+          "role": "flagship",
+          "blurb": "30.7× pthreads speedup on 72 cores + ~1.04M meals/s fine-spinlock — the parallelism story directly readable to an HFT engineer."
+        }
+      ],
+      "stack": [
+        "C",
+        "C++",
+        "pthreads",
+        "OpenMP"
+      ],
+      "metrics": [
+        {
+          "label": "Vecadd speedup",
+          "value": "30.7× on 72 cores",
+          "source": "audit §comp35112 (statistics.csv)"
+        },
+        {
+          "label": "Fine-spinlock throughput",
+          "value": "~1,039K meals/s @ 64T",
+          "source": "audit §comp35112 (benchmarks.csv, fine-spinlock)"
+        },
+        {
+          "label": "Serial fraction",
+          "value": "~3% (bandwidth-bound)",
+          "source": "audit §comp35112 (03_results.tex:4)"
+        }
+      ],
+      "role": "Sole author (three labs). Implemented NUMA first-touch affinity vecadd, fine-grained spinlock dining philosophers with lock-ordering, and a temporal-blocking std::barrier stencil. Benchmarked on mcore72 (72-core, 2-socket NUMA machine).",
+      "status": "case-study",
+      "repo": {
+        "kind": "case-study"
+      },
+      "dates": "2025–26"
+    },
+    {
+      "title": "ONI — Rust LLM Agent Harness",
+      "tagline": "78k LOC single-crate Rust research harness — parser/exec separation, graph working-memory, criterion µs/ns benchmarks, process-group SIGKILL sandbox.",
+      "order": 7,
+      "buckets": [
+        "systems"
+      ],
+      "spokes": [
+        {
+          "id": "finance",
+          "role": "secondary",
+          "blurb": "Systems Rust at scale: tokio async, process isolation, µs-latency targets — the same discipline as low-latency infra."
+        },
+        {
+          "id": "drone",
+          "role": "secondary",
+          "blurb": "Production-incident-driven engineering: graph memory, context compaction, and a process-group kill that came from a real 45-min hang."
+        }
+      ],
+      "stack": [
+        "Rust",
+        "tokio",
+        "criterion"
+      ],
+      "metrics": [
+        {
+          "label": "Codebase",
+          "value": "78,176 LOC Rust",
+          "source": "audit §oni-preview (git ls-files wc -l)"
+        },
+        {
+          "label": "Parser target",
+          "value": "< 100 µs / 15-sample corpus",
+          "source": "audit §oni-preview (benches/parser.rs:8-9)"
+        },
+        {
+          "label": "Dispatch target",
+          "value": "< 5 ms / dispatch",
+          "source": "audit §oni-preview (benches/tools.rs:13)"
+        },
+        {
+          "label": "LIT detector target",
+          "value": "< 50 ns / 1 KB chunk",
+          "source": "audit §oni-preview (benches/lit.rs:6)"
+        }
+      ],
+      "role": "Sole author. Built the parser/exec separation, graph working-memory (UUIDv4 nodes, BFS gather, compaction), three Criterion bench targets, and the process-group SIGKILL sandboxing. Production-incident-driven — the kill pattern came from a real git-clone hang in a remote-benchmark run.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/ONI"
+      },
+      "dates": "2026"
+    },
+    {
+      "title": "DAWgit — Git for DAW Projects",
+      "tagline": "A real macOS daemon — semantic-delta version control for Ableton sessions, with content-addressed audio LFS and Unix-socket IPC.",
+      "order": 8,
+      "buckets": [
+        "systems"
+      ],
+      "spokes": [
+        {
+          "id": "drone",
+          "role": "flagship",
+          "blurb": "Git-backed version control for Ableton sessions: semantic diff that skips viewport noise, per-file branching without touching HEAD, SHA-256 content-addressed audio LFS."
+        }
+      ],
+      "stack": [
+        "Rust",
+        "tokio",
+        "libgit2",
+        "roxmltree"
+      ],
+      "metrics": [
+        {
+          "label": "Ableton parser",
+          "value": "gzip-XML zero-copy parse (roxmltree)",
+          "source": "audit §dawgit (parsers/ableton.rs:1306 LOC)"
+        },
+        {
+          "label": "Audio LFS",
+          "value": "SHA-256 content-addressed store",
+          "source": "audit §dawgit (lfs.rs:78-93)"
+        },
+        {
+          "label": "IPC",
+          "value": "Unix domain socket, newline-delimited JSON",
+          "source": "audit §dawgit (ipc.rs:94 LOC)"
+        }
+      ],
+      "role": "Sole author. Built the daemon (FS watcher, IPC, async/sync boundary), the Ableton gzip-XML parser (1,306 LOC, zero-copy), the git object layer (branch-per-file commits without touching HEAD, three-way revert via merge_trees), and the SHA-256 content-addressed audio LFS.",
+      "status": "working",
+      "repo": {
+        "kind": "private"
+      },
+      "dates": "2026"
+    },
+    {
+      "title": "FSAI Driverless Racing Simulator",
+      "tagline": "34k LOC C++ fixed-timestep sim — RK4 with adaptive sub-stepping, closed perception loop (ONNX + SIFT + Kalman), nanosecond budget timers.",
+      "order": 9,
+      "buckets": [
+        "systems",
+        "control"
+      ],
+      "spokes": [
+        {
+          "id": "motorsport",
+          "role": "flagship",
+          "blurb": "Fixed-timestep driverless racing simulator: RK4 vehicle dynamics, three runtime-switchable models, and a closed ONNX+SIFT+Kalman perception loop."
+        },
+        {
+          "id": "drone",
+          "role": "secondary",
+          "blurb": "C++ real-time systems: RK4 adaptive sub-stepping, async PBO readback, ns budget timers, SocketCAN/UDP — the embedded systems toolkit."
+        }
+      ],
+      "stack": [
+        "C++17",
+        "CMake",
+        "ONNXRuntime",
+        "OpenCV",
+        "Eigen"
+      ],
+      "metrics": [
+        {
+          "label": "Codebase",
+          "value": "34,148 LOC C++",
+          "source": "audit §fsai-simulation-c (git ls-files excl third_party)"
+        },
+        {
+          "label": "Dynamics",
+          "value": "RK4 + adaptive sub-stepping",
+          "source": "audit §fsai-simulation-c (vehicle_simulator.cpp:56-74)"
+        },
+        {
+          "label": "Perception loop",
+          "value": "ONNX + SIFT + Kalman map fusion",
+          "source": "audit §fsai-simulation-c (vision/runtime_cpp)"
+        }
+      ],
+      "role": "Sole author. Built the RK4 vehicle dynamics with adaptive sub-stepping, the three runtime-switchable vehicle models (MB/ST/STD), the closed perception pipeline (stereo FBO → async PBO readback → SIFT disparity → ONNX cone detector → Kalman tracker → BayesianMapper), and the ns budget timer infra.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/FSAI_Simulation_C"
+      },
+      "dates": "2025"
+    },
+    {
+      "title": "CommonRoad C++ Port",
+      "tagline": "~11.6k LOC C++17 port of CommonRoad vehicle models (KS/ST/MB) as a clean static library with SimulationDaemon API and TypeScript web-sdk.",
+      "order": 10,
+      "buckets": [
+        "systems",
+        "control"
+      ],
+      "spokes": [
+        {
+          "id": "motorsport",
+          "role": "secondary",
+          "blurb": "C++17 port of KS/ST/MB vehicle models — faithful to the academic Python reference, with a clean library API, sub-step scheduler, and telemetry."
+        }
+      ],
+      "stack": [
+        "C++17/20",
+        "CMake",
+        "Eigen",
+        "TypeScript"
+      ],
+      "metrics": [
+        {
+          "label": "Codebase",
+          "value": "~11.6k LOC C++17",
+          "source": "audit §commonroad (measured 10,642 cpp/cc/h/hpp excl third_party)"
+        },
+        {
+          "label": "Vehicle models",
+          "value": "KS / ST / MB",
+          "source": "audit §commonroad (lib/models/vehiclemodels)"
+        },
+        {
+          "label": "ST kinematic fallback",
+          "value": "at |vx| < 0.1 m/s",
+          "source": "audit §commonroad (vehicle_dynamics_st.cpp:49-58)"
+        }
+      ],
+      "role": "Sole author. Ported the CommonRoad Python vehicle models (KS, ST, MB) to C++17, built the SimulationDaemon API with ModelTiming sub-step scheduler, telemetry layer, and a TypeScript web-sdk.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/CommonRoadCXXPort"
+      },
+      "dates": "2025"
+    },
+    {
+      "title": "Slit Light Interference Simulator",
+      "tagline": "Physically-correct single-slit Fraunhofer diffraction computed per-fragment on the GPU — sinc² intensity in a custom GLSL shader with live parameters.",
+      "order": 11,
+      "buckets": [
+        "graphics"
+      ],
+      "spokes": [
+        {
+          "id": "drone",
+          "role": "secondary",
+          "blurb": "GPU-computed physics: sinc² Fraunhofer diffraction, 6 custom GLSL shaders, live wavelength/slit/distance params."
+        }
+      ],
+      "stack": [
+        "JavaScript",
+        "Three.js",
+        "GLSL"
+      ],
+      "metrics": [
+        {
+          "label": "Custom shaders",
+          "value": "6 GLSL shaders",
+          "source": "audit §websites (slit-light-interference-sim)"
+        },
+        {
+          "label": "Diffraction model",
+          "value": "physically-correct sinc² per-fragment",
+          "source": "audit §websites (interference_fragment.fs.glsl)"
+        }
+      ],
+      "role": "Sole author. Implemented the interference fragment shader (sinc² intensity formula, correct physical parametrisation), the live control UI, and the Three.js render loop.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/Slit-Light-Interference-Sim"
+      },
+      "dates": "2025"
+    },
+    {
+      "title": "CarrLane — Engineering Part Chatbot",
+      "tagline": "LLM + function-calling retrieval pipeline over an engineering parts catalog, built during an AI/Software Engineering internship.",
+      "order": 12,
+      "buckets": [
+        "systems"
+      ],
+      "spokes": [
+        {
+          "id": "finance",
+          "role": "secondary",
+          "blurb": "LLM function-calling retrieval pipeline built in industry — the one entry where the constraint was a real business catalog, not a personal project."
+        }
+      ],
+      "stack": [
+        "Python",
+        "LLM",
+        "vector search",
+        "Node"
+      ],
+      "metrics": [
+        {
+          "label": "Catalog",
+          "value": "10,000+ parts",
+          "source": "CV (Randev_Ranjit FPGA-Trading-CV)"
+        },
+        {
+          "label": "LLM",
+          "value": "GPT-4o-mini + function-calling",
+          "source": "audit §websites (carrlane-chatbot: chat-server.js)"
+        },
+        {
+          "label": "Dates",
+          "value": "Jun–Aug 2025, Chennai",
+          "source": "CV (AI / Software Engineering Intern)"
+        }
+      ],
+      "role": "AI / Software Engineering Intern. Built the LLM + function-calling retrieval pipeline over the engineering parts catalog; improved indexing and data quality for natural-language part selection.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/Carrlane-Chatbot"
+      },
+      "dates": "Jun–Aug 2025"
+    }
+  ]
+}

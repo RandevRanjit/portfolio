@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import AsciiPanel from '../components/AsciiPanel.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import TermRule from '../components/TermRule.astro';
+import { spokeNav } from '../data/site';
+import { getCollection } from 'astro:content';
+
+const all = await getCollection('projects');
+const featured = all.sort((a, b) => a.data.order - b.data.order).slice(0, 4);
+---
+<BaseLayout title="Portfolio" current={undefined}>
+  <Hero />
+  <div class="wrap ascii-wrap reveal">
+    <AsciiPanel />
+  </div>
+  <TermRule />
+
+  <section class="wrap reveal" style="padding-block:2rem;">
+    <p class="section-num">01 / FIELDS</p>
+    <ul class="fields">
+      {spokeNav.map((s, i) => (
+        <li class="reveal"><a class={`fieldcard fieldcard--${s.id}`} href={s.href}>
+          <span class="label">{String(i + 1).padStart(2, '0')}</span>
+          <span class="fieldcard__l">{s.label} →</span>
+        </a></li>
+      ))}
+    </ul>
+  </section>
+  <TermRule />
+
+  <section class="wrap reveal" style="padding-block:2rem 3rem;">
+    <p class="section-num">02 / SELECTED WORK</p>
+    <div class="grid">
+      {featured.map((p, i) => (
+        <div class="reveal" style={`transition-delay:${i * 80}ms`}>
+          <ProjectCard num={String(p.data.order).padStart(2, '0')} slug={p.id}
+            title={p.data.title} tagline={p.data.tagline} stack={p.data.stack}
+            repoKind={p.data.repo.kind} />
+        </div>
+      ))}
+    </div>
+    <p style="margin-top:1.5rem;"><a href="/finance">See all work by field →</a></p>
+  </section>
+</BaseLayout>
+<style>
+  .ascii-wrap { padding-block: 0 0; }
+  .fields { list-style:none; padding:0; margin:1rem 0 0; display:grid; gap:0; }
+  .fieldcard { display:flex; align-items:baseline; gap:1rem; padding:1.25rem 0; border-top:2px solid var(--ink);
+               text-decoration:none; font-family:var(--font-display); font-weight:800; font-size:var(--fs-h2); }
+  .fieldcard--finance:hover { color: var(--accent-finance); }
+  .fieldcard--drone:hover { color: var(--accent-drone); }
+  .fieldcard--motorsport:hover { color: var(--accent-motor); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(18rem,1fr)); gap:1.25rem; }
+  .grid > .reveal { height:100%; }
+</style>

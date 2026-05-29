@@ -1,0 +1,21 @@
+---
+// src/components/SkillsMatrix.astro
+const groups = [
+  { k: 'HDL & EDA', v: 'SystemVerilog, Verilog, Vivado (Artix-7/Spartan-7), Xilinx ISE (Spartan-6), ModelSim/Questa, register-mapped peripherals' },
+  { k: 'Languages', v: 'Rust, C++17/20, C, Python, RISC-V & ARM assembly' },
+  { k: 'Numerics & Control', v: 'RK4, CasADi/IPOPT MPC, Kalman filtering, differential flatness' },
+  { k: 'Concurrency & Systems', v: 'pthreads, std::thread, OpenMP, atomics, spinlocks, NUMA affinity, tokio async' },
+];
+---
+<dl class="skills">
+  {groups.map((g) => (
+    <div class="skills__row">
+      <dt class="label">{g.k}</dt><dd>{g.v}</dd>
+    </div>
+  ))}
+</dl>
+<style>
+  .skills { margin: 0; border-top: var(--rule) solid var(--ink); }
+  .skills__row { display: grid; grid-template-columns: 14rem 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 2px solid var(--line); }
+  @media (max-width: 640px){ .skills__row { grid-template-columns: 1fr; gap: .25rem; } }
+</style>

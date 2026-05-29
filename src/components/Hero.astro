@@ -1,0 +1,14 @@
+---
+// src/components/Hero.astro
+import { site } from '../data/site';
+---
+<header class="hero wrap reveal">
+  <p class="section-num">00 / RANDEV RANJIT</p>
+  <h1 class="hero__spine">{site.spine}</h1>
+  <p class="hero__sub label">{site.bsc} · Incoming {site.msc}</p>
+</header>
+<style>
+  .hero { padding-block: 3.5rem 2rem; }
+  .hero__spine { font-size: var(--fs-mega); max-width: 18ch; }
+  .hero__sub { display: block; margin-top: 1rem; }
+</style>

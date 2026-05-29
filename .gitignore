@@ -1,0 +1,17 @@
+# deps & build
+node_modules/
+dist/
+.astro/
+
+# os
+.DS_Store
+
+# editor
+.vscode/
+
+# INTERNAL — never publish. Candid audit, strategy/brief, grill log, specs & plans,
+# claims ledger. Kept locally for the re-scan/update workflow; excluded from the public repo.
+docs/
+.grill/
+
+# note: pdf/data/projects.json (generated) and public/*.pdf are committed for Pages

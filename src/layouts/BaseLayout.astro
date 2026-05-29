@@ -1,0 +1,73 @@
+---
+import '@fontsource-variable/archivo';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import TermRule from '../components/TermRule.astro';
+import { site } from '../data/site';
+const { title, description, spoke, current } = Astro.props as
+  { title: string; description?: string; spoke?: string; current?: string };
+---
+<!doctype html>
+<html lang="en" data-spoke={spoke ?? undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — {site.name}</title>
+    <meta name="description" content={description ?? site.spine} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <!-- no-flash theme: runs before first paint -->
+    <script is:inline>
+      const t = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = t;
+    </script>
+  </head>
+  <body>
+    <Nav current={current} />
+    <TermRule />
+    <main><slot /></main>
+    <Footer />
+    <!-- theme toggle wiring -->
+    <script is:inline>
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        function syncLabel() {
+          var dark = document.documentElement.dataset.theme === 'dark';
+          btn.textContent = dark ? '[LIGHT]' : '[DARK]';
+          btn.setAttribute('aria-pressed', String(dark));
+        }
+        syncLabel();
+        btn.addEventListener('click', function () {
+          var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.dataset.theme = next;
+          localStorage.setItem('theme', next);
+          syncLabel();
+        });
+      })();
+    </script>
+    <!-- entrance animations via IntersectionObserver -->
+    <script is:inline>
+      (function () {
+        var prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var items = document.querySelectorAll('.reveal');
+        if (prefersReduced || !('IntersectionObserver' in window)) {
+          items.forEach(function (el) { el.classList.add('is-in'); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-in');
+              io.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.12 });
+        items.forEach(function (el) { io.observe(el); });
+      })();
+    </script>
+  </body>
+</html>
