@@ -8,6 +8,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import TermRule from '../components/TermRule.astro';
 import { site } from '../data/site';
+import { withBase } from '../lib/url';
 const { title, description, spoke, current } = Astro.props as
   { title: string; description?: string; spoke?: string; current?: string };
 ---
@@ -18,7 +19,7 @@ const { title, description, spoke, current } = Astro.props as
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} — {site.name}</title>
     <meta name="description" content={description ?? site.spine} />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="sitemap" href={withBase('sitemap-index.xml')} />
     <!-- no-flash theme: runs before first paint -->
     <script is:inline>
       const t = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
 ---
 <BaseLayout title="404" description="Page not found">
   <section class="wrap" style="padding-block:4rem;">
     <p class="section-num">ERR / 404</p>
     <h1 style="font-size:var(--fs-mega)">Not found.</h1>
-    <p>That page doesn't exist. <a href="/">Back to the hub →</a></p>
+    <p>That page doesn't exist. <a href={withBase('')}>Back to the hub →</a></p>
   </section>
 </BaseLayout>

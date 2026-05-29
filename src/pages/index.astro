@@ -5,6 +5,7 @@ import AsciiPanel from '../components/AsciiPanel.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import TermRule from '../components/TermRule.astro';
 import { spokeNav } from '../data/site';
+import { withBase } from '../lib/url';
 import { getCollection } from 'astro:content';
 
 const all = await getCollection('projects');
@@ -21,7 +22,7 @@ const featured = all.sort((a, b) => a.data.order - b.data.order).slice(0, 4);
     <p class="section-num">01 / FIELDS</p>
     <ul class="fields">
       {spokeNav.map((s, i) => (
-        <li class="reveal"><a class={`fieldcard fieldcard--${s.id}`} href={s.href}>
+        <li class="reveal"><a class={`fieldcard fieldcard--${s.id}`} href={withBase(s.href)}>
           <span class="label">{String(i + 1).padStart(2, '0')}</span>
           <span class="fieldcard__l">{s.label} →</span>
         </a></li>
@@ -41,7 +42,7 @@ const featured = all.sort((a, b) => a.data.order - b.data.order).slice(0, 4);
         </div>
       ))}
     </div>
-    <p style="margin-top:1.5rem;"><a href="/finance">See all work by field →</a></p>
+    <p style="margin-top:1.5rem;"><a href={withBase('finance')}>See all work by field →</a></p>
   </section>
 </BaseLayout>
 <style>

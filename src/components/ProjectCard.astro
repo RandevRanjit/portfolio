@@ -1,11 +1,12 @@
 ---
 // src/components/ProjectCard.astro
 import AsciiAnim from './AsciiAnim.astro';
+import { withBase } from '../lib/url';
 const { num, slug, title, tagline, stack, blurb, repoKind } = Astro.props as {
   num: string; slug: string; title: string; tagline: string; stack: string[]; blurb?: string; repoKind: string;
 };
 ---
-<a class="card" href={`/work/${slug}`}>
+<a class="card" href={withBase(`work/${slug}`)}>
   <span class="card__num section-num">{num}</span>
   <span class="card__edge" aria-hidden="true"></span>
   <AsciiAnim slug={slug} size="card" />

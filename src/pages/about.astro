@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SkillsMatrix from '../components/SkillsMatrix.astro';
 import { site } from '../data/site';
+import { withBase } from '../lib/url';
 const timeline = [
   { when: '2023–2026', what: site.bsc + ' — hardware track: SoC design, processor microarchitecture, multicore computing, computer architecture, microcontrollers, digital logic + Verilog.' },
   { when: 'Jun–Aug 2025', what: 'AI / Software Engineering Intern, CarrLane Manufacturing (Chennai).' },
@@ -25,7 +26,7 @@ const timeline = [
 
     <p style="margin-top:2rem;">
       <a href={site.links.github}>GitHub</a> · <a href={site.links.linkedin}>LinkedIn</a> ·
-      <a href={site.links.email}>Email</a> · <a href={site.links.portfolioPdf}>Portfolio PDF</a> · <a href={site.links.cvPdf}>CV</a>
+      <a href={site.links.email}>Email</a> · <a href={withBase(site.links.portfolioPdf)}>Portfolio PDF</a> · <a href={withBase(site.links.cvPdf)}>CV</a>
     </p>
   </section>
 </BaseLayout>

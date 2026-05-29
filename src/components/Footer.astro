@@ -1,6 +1,7 @@
 ---
 import { site } from '../data/site';
 import TermRule from './TermRule.astro';
+import { withBase } from '../lib/url';
 ---
 <TermRule />
 <footer class="footer wrap">
@@ -12,8 +13,8 @@ import TermRule from './TermRule.astro';
     <li><a href={site.links.github}>GitHub</a></li>
     <li><a href={site.links.linkedin}>LinkedIn</a></li>
     <li><a href={site.links.email}>Email</a></li>
-    <li><a href={site.links.portfolioPdf}>Portfolio PDF</a></li>
-    <li><a href={site.links.cvPdf}>CV</a></li>
+    <li><a href={withBase(site.links.portfolioPdf)}>Portfolio PDF</a></li>
+    <li><a href={withBase(site.links.cvPdf)}>CV</a></li>
   </ul>
   <p class="label">Built with Astro · source on GitHub</p>
 </footer>

@@ -1,13 +1,14 @@
 ---
 import { spokeNav, site } from '../data/site';
+import { withBase } from '../lib/url';
 const { current } = Astro.props as { current?: string };
 ---
 <nav class="nav wrap">
-  <a class="nav__home" href="/">{site.name}</a>
+  <a class="nav__home" href={withBase('')}>{site.name}</a>
   <div class="nav__right">
     <ul class="nav__spokes">
       {spokeNav.map((s) => (
-        <li><a href={s.href} class:list={['chip', `chip--${s.id}`, { 'chip--on': current === s.id }]}>{s.label}</a></li>
+        <li><a href={withBase(s.href)} class:list={['chip', `chip--${s.id}`, { 'chip--on': current === s.id }]}>{s.label}</a></li>
       ))}
     </ul>
     <button id="theme-toggle" class="chip chip--theme" aria-label="Toggle colour theme" aria-pressed="false">[DARK]</button>
