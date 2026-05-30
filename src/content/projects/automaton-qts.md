@@ -1,32 +1,54 @@
 ---
 title: Quant Trading System (Automaton-QTS)
-tagline: Multi-signal trading engine with a tick-level, queue-position-aware HFT backtester.
+tagline: A multi-signal trading engine, an agent-based market simulator, and a relation-typed contagion-propagation graph that I proved is dead in equities and alive in crypto.
 order: 1
 buckets: [systems, control]
 spokes:
-  - { id: finance, role: flagship, blurb: "Tick-level HFT backtester (50 µs latency) + regime-gated cross-asset propagation graph." }
-stack: [Python, NautilusTrader, hftbacktest, PyTorch, TimescaleDB]
+  - { id: finance, role: flagship, blurb: "Relation-typed propagation operator that transfers to unseen links; research-stage feasibility study (n=3 cascades) finds the mechanism alive in crypto (Terra p=0.0009) and definitively negative in equities (473 events, no edge)." }
+stack: [Python, PyTorch, torchdiffeq, NautilusTrader, hftbacktest, scipy, SQLAlchemy/TimescaleDB]
 metrics:
-  - { label: "Code", value: "40.9k LOC", source: "audit §automaton-qts (git ls-files)" }
-  - { label: "Coverage", value: "81.9%", source: "audit §automaton-qts (coverage.xml:2)" }
-  - { label: "Sim order latency", value: "50 µs", source: "audit §automaton-qts (hft_backtest.py:242)" }
-role: Sole author. Built the signal pipeline, risk engine (hard circuit breakers), dual backtester, and the regime-gated propagation-graph research module.
+  - { label: "Code", value: "45.7k LOC Python", source: "automaton-qts: git ls-files '*.py' | xargs wc -l (2026-05-27)" }
+  - { label: "Tests", value: "1,314 test fns, 81.9% cov", source: "automaton-qts: tests/ + coverage.xml line-rate 0.8189" }
+  - { label: "Crypto contagion (research-stage, n=3)", value: "+9.2%/event mkt-neutral, Sharpe 1.49 (n=3, small-sample feasibility study)", source: "Internal crypto contagion feasibility report §1 (2026-05-25); not a deployed or validated strategy" }
+  - { label: "Terra linked-peer signal (research-stage, n=3)", value: "p=0.0009 (Mann-Whitney, 72h)", source: "Internal crypto contagion feasibility report §3; n=3 cascades, pipeline not in public repo" }
+role: Sole author. Built the signal/risk/execution core, the human-gated LLM oversight trail, an agent-based market simulator for synthetic data, and the relation-typed propagation-graph research line (equity negative + crypto positive).
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/Automaton-QTS" }
 dates: "2026"
 ---
 
-A multi-signal trading system that fuses technical indicators, NLP sentiment (FinBERT), and a
-2-state Gaussian-HMM volatility regime into a composite alpha score, with hard risk limits and a
-human-in-the-loop parameter-governance trail. Two backtest engines run side by side: a bar-level
-deterministic one and a **tick-level, queue-position-aware** engine (hftbacktest) with configurable
-order latency.
+Three systems sharing one codebase: a **multi-signal trading engine** with hard risk limits and a human-in-the-loop audit trail, an **agent-based market simulator** that generates synthetic order flow and news, and a **research line on event-driven contagion propagation** — where the headline result is a *negative* one I trust as much as the positive.
 
-The research module is a **regime-gated bilinear propagation graph** that learns nth-order cross-asset
-reactions, evaluated against an adversarial confound simulation where the target asset is
-factor-orthogonal to its neighbours — so a correlational baseline *can't* find it. Correctness is
-something you prove, not assume: a two-part feasibility gate requires beating both the no-propagation
-floor and the correlational baseline, with transfer to a held-out event.
+## The research line is the real work
 
-_Honest scope:_ prices are floats, the order book is single-level — production HFT needs integer-tick
-pricing and a price-time-priority matching engine (see "what I'd build next" on the Finance page).
+The question: when a named asset gets hit by an event (an earnings surprise, a hack, a depeg), can you predict which *unnamed* peers react — better than plain correlation can? Correlation is the adversary here, because the peers that matter are often the ones that *don't* co-move with the source in normal times.
+
+The model is a **relation-typed propagation operator**. Edges come from a typed link graph (competitor / supplier / customer / partner for equities; `shares_oracle`, `bridges_to`, `collateral_of`, … 7 channels for crypto). Each relation type `r` gets its own bilinear form `M_r`, so the edge weight is `W[i,j] = ξ_iᵀ M_r ξ_j` from the endpoints' *features*, not their identities. An event is a `do()`-intervention: pin the named node to its merit, then unroll the operator a fixed number of steps, re-pinning the source each step. Because the rule is *per-type and feature-conditioned*, a type learned on some links **transfers zero-shot to links it never saw in training** — which is the only thing that makes this more than curve-fitting. The gate enforces exactly that: train on a stratified subset of edges, score on held-out edges, and require beating a per-pair β baseline fit on each held-out pair's *own* full history.
+
+I also tried to graduate the linear operator twice — a graph **neural-ODE** (continuous-time, nonlinear tanh message passing via `torchdiffeq`) and an **NBFNet-style path-aggregation** model (vector node states, per-relation message layers). Both are in the repo, and both are documented as *not improving transfer* over the linear model. Keeping the dead ends in, labelled, is the point.
+
+## Proving it with an adversarial world before touching real data
+
+Before any real market data, I built a synthetic ground-truth world designed to *defeat correlation*. Each event is a 2-hop causal chain A → B → C: B and C are constructed factor-orthogonal to A (so a correlational baseline sees nothing), while a **decoy** node *is* factor-correlated with A but has no causal edge — pure bait. The A→C link has no direct feature match; it exists only as the composition R1∘R2 of two relations, so reaching C requires the model to learn both types and compose them across the unroll. The operator has to beat two baselines — a no-propagation floor and a β-projection correlational bar — *and* transfer to a held-out chain it never saw coupled. Correctness is something you prove against an adversary, not something you assert.
+
+## The equity result: a clean, expensive negative
+
+On **real** equities — 15 S&P names, 473 earnings events (2016–2023), 75,325 FNSPID news articles filtered to the universe, **43 directed causal edges discovered by an LLM** (Qwen via llama.cpp) from co-mention pairs at 80% rejection — the operator **fails** the gate. It does not beat per-pair correlation on held-out links at any horizon or universe (14 experiments, three universes including small-cap inattention names). The LLM link graph itself is genuinely correct (right competitors, right supplier/customer directions), so the failure isn't the graph — it's that **liquid US equities reprice peer information too fast to leave a tradeable edge**. I wrote that up as a definitive negative and *pivoted* rather than torturing the data.
+
+## The crypto result: the mechanism is alive — and modest, and honest
+
+Repointing the same machinery at crypto **contagion cascades** (hacks, depegs, insolvencies), the mechanism is real:
+
+- **Terra/UST**: graph-linked peers dropped significantly more than unlinked tokens — one-sided Mann-Whitney **p=0.0009 at 72h**. At 24h, the three most-negative tokens in the entire cross-section were all graph-linked.
+- A **costed, market-neutral backtest** — short the top-3 graph-linked peers per cascade, net of real perp funding and 5bps/side slippage — earns **+9.2%/event, Sharpe 1.49, win 2/3** across Terra (+19.6%), Curve/Vyper (+16.4%), and FTX (−8.2%).
+- The candid part: the raw outright short looks far better (+20.9%/event, Sharpe 3.78) but that's almost entirely **BTC-crash beta**, not contagion alpha — so I report the market-neutral number. And **perp funding kills the edge at the violent epicenter**: shorting SOL after FTX was +39.7% gross but −22.4% in funding, because the SOL perp traded at a deep stress discount. The tradeable edge lives in *second-ring liquid DeFi peers*, not the spectacular collapses (which are un-borrowable *and* funding-toxic).
+
+Reactions are BTC-adjusted abnormal CARs (so "everything dumps with BTC" is removed by construction), and the delisted flagship pairs (FTT/LUNA/UST/SRM) are only measurable because I pull `data.binance.vision` archive dumps that retain them. **n=3 cascades — the Sharpe is illustrative, not forward-credible**, and the LLM is pre-cutoff so hindsight is mitigated, not eliminated. I say so in the report.
+
+## The engine and the simulator around it
+
+The propagation work sits on a real trading stack: technical indicators + FinBERT/VADER/GDELT sentiment fusion + a 2-state Gaussian-HMM vol regime feeding a composite alpha; a **risk engine** with a circuit breaker (compared in absolute-loss units to dodge float-division rounding), max-drawdown / position-size / open-position limits; and an **LLM oversight layer that is analyst-only** — it can *propose* parameter changes but every change goes through a Rich-terminal approve/reject UI with a git audit trail, and `config/risk_limits.json` is architecturally off-limits, guarded by a pre-commit hook. There's a bar-level deterministic backtester, a NautilusTrader integration (~1.35k LOC) for live/backtest parity, and a `world/` **agent-based simulator** — market-maker and persona agents trading through an order book on a simulated clock, emitting bars + synthetic news — so strategies can be stress-tested on flow the real market never produced.
+
+## Honest scope
+
+The "50 µs latency" HFT path is a thin wrapper over the Rust `hftbacktest` library (lazy-imported; the engine is theirs, the adapter and result-mapping are mine) — I did not write a price-time-priority matching engine. The crypto edge is `n=3` and needs post-cutoff out-of-sample cascades and an event-detection feed before it's a strategy rather than a study. Prices in my own bar-level backtester are floats on a single-level book. The wins here are the *method* and the *honesty of the evaluation*, not a deployed money-printer.
