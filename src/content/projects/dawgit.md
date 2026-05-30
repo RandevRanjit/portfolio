@@ -7,11 +7,11 @@ spokes:
   - { id: drone, role: flagship, blurb: "Version control for Ableton sessions as a systems problem: parse the gzip-XML project into a typed AST, diff at the level of tracks/clips/devices/automation, gate commits on semantic change so viewport-only saves are ignored, branch per .als file without disturbing the working tree." }
 stack: [Rust, tokio, libgit2 (git2-rs), roxmltree, flate2, SHA-256, Unix sockets, launchd, SwiftUI]
 metrics:
-  - { label: ".als → typed AST", value: "gzip → roxmltree DOM walk → ProjectAst, 1,306 LOC parser", source: "dawgit: dawgit-daemon/src/parsers/ableton.rs" }
-  - { label: "Semantic diff", value: "21 delta variants (track/clip/device/automation/global), ID-keyed set diff", source: "dawgit: dawgit-daemon/src/differ.rs + models.rs:139" }
-  - { label: "Per-file branch commit", value: "new tree on refs/heads/<b>, HEAD/index/workdir untouched", source: "dawgit: dawgit-daemon/src/git/mod.rs:211" }
-  - { label: "Audio LFS", value: "SHA-256 content-addressed cache + git-lfs v1 pointers, dedup on existence", source: "dawgit: dawgit-daemon/src/git/lfs.rs:78" }
-  - { label: "Tests", value: "52 passing (18 parser/differ, 15 git, 19 IPC)", source: "cargo test -p dawgit-daemon" }
+  - { label: ".als → typed AST", value: "1,306 LOC parser", source: "dawgit: dawgit-daemon/src/parsers/ableton.rs" }
+  - { label: "Semantic diff", value: "21 delta variants", source: "dawgit: dawgit-daemon/src/differ.rs + models.rs:139" }
+  - { label: "Per-file branch commit", value: "HEAD/index untouched", source: "dawgit: dawgit-daemon/src/git/mod.rs:211" }
+  - { label: "Audio LFS", value: "SHA-256 content-addressed", source: "dawgit: dawgit-daemon/src/git/lfs.rs:78" }
+  - { label: "Tests", value: "52 tests", source: "cargo test -p dawgit-daemon" }
 role: Sole author. Built the three-binary system end to end — Rust daemon (FS watcher, async/sync IPC boundary, git object layer, LFS, project discovery, launchd integration), the 1,306-LOC Ableton gzip-XML parser, the semantic differ, the clap CLI, and the SwiftUI menubar app that talks to the daemon over the socket.
 status: working
 repo: { kind: private }

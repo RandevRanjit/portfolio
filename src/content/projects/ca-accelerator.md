@@ -8,9 +8,9 @@ spokes:
   - { id: drone, role: secondary, blurb: "Embedded hardware: a hand-written accelerator integrated into a RISC-V SoC and driven over MMIO, with live video out." }
 stack: [SystemVerilog, Vivado, Artix-7, RISC-V assembly, Questa]
 metrics:
-  - { label: "Accelerator (block)", value: "4,433 LUT / 1,467 FF / 0 BRAM", source: "Phase 4 SOC report, Table 3 (u_automaton hierarchical utilisation)" }
-  - { label: "Whole SoC fill", value: "43.81% LUT · 96.0% BRAM", source: "Phase 4 SOC report, Table 1 (post-implementation, XC7A35T)" }
-  - { label: "Rule space", value: "256 rules, 1 register", source: "ca-accelerator: Phase2/Phase2/unit_automaton.sv:281-282 (rule_eff[{L,M,R}])" }
+  - { label: "Accelerator (block)", value: "4,433 LUT", source: "Phase 4 SOC report, Table 3 (u_automaton hierarchical utilisation)" }
+  - { label: "Whole SoC fill", value: "96.0% BRAM", source: "Phase 4 SOC report, Table 1 (post-implementation, XC7A35T)" }
+  - { label: "Rule space", value: "256 rules", source: "ca-accelerator: Phase2/Phase2/unit_automaton.sv:281-282 (rule_eff[{L,M,R}])" }
   - { label: "Functional coverage", value: "100% stmt/branch/cond/FSM", source: "Phase 2 SOC report §4.2 (Questa, toggle 30.4% justified)" }
 role: Designed unit_automaton from scratch (programmable rule-as-lookup, 32-bit LFSR seed, 3-state compute/write FSM, byte-lane framestore writes with req/ack backpressure), wrote a coverage-driven testbench to 100% functional coverage, integrated it into the drawing engine replacing a dummy slot, drove it from a RISC-V MMIO program, and closed it through Vivado synthesis + implementation on Artix-7 with a live monitor demo.
 status: case-study

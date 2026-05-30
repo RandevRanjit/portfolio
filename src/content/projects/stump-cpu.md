@@ -11,7 +11,7 @@ metrics:
   - { label: "Slice LUTs", value: "2,068 / 2,400 (86%)", source: "comp22111-processor: synthesis/Stump_Board/Stump_Board.mrp:24" }
   - { label: "Occupied slices", value: "591 / 600 (98%)", source: "comp22111-processor: synthesis/Stump_Board/Stump_Board.mrp:37" }
   - { label: "Slice registers", value: "1,052 / 4,800 (21%)", source: "comp22111-processor: synthesis/Stump_Board/Stump_Board.mrp:19-20" }
-  - { label: "Timing score", value: "0 — setup 0, hold 0, all signals fully routed", source: "comp22111-processor: synthesis/Stump_Board/Stump_Board.par:152,179" }
+  - { label: "Timing score", value: "0 (timing met)", source: "comp22111-processor: synthesis/Stump_Board/Stump_Board.par:152,179" }
 role: Authored the datapath (ALU, barrel shifter, sign-extender, 8-register file with R0=0 / R7=PC, operand muxes), the 3-state control FSM (FETCH/EXECUTE/MEMORY) and the control-decode logic, and implemented the LDST and BCC instruction paths. Top-level board wrapper and 1.5k-line memory model were provided. Wrote test programs in Stump assembly including a Battleship game driving a memory-mapped 8×8 LED matrix.
 status: working
 repo: { kind: case-study }

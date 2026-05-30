@@ -8,9 +8,9 @@ spokes:
 stack: [JavaScript, "Three.js", GLSL, Tweakpane, Webpack]
 metrics:
   - { label: "Diffraction model", value: "sinc² Fraunhofer envelope, per-fragment", source: "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14" }
-  - { label: "Shader programs", value: "3 (grid / interference / loading), 6 GLSL files", source: "slit-sim: src/shaders/*.glsl" }
-  - { label: "Engine", value: "~1.65k LOC single-file Three.js app", source: "slit-sim: src/script.js (wc -l = 1654)" }
-  - { label: "Wavelength→colour", value: "380–780 nm CIE piecewise → RGB", source: "slit-sim: src/script.js:204-274 (nm_to_rgb)" }
+  - { label: "Shader programs", value: "3 shader programs", source: "slit-sim: src/shaders/*.glsl" }
+  - { label: "Engine", value: "~1.65k LOC", source: "slit-sim: src/script.js (wc -l = 1654)" }
+  - { label: "Wavelength→colour", value: "380–780 nm CIE→RGB", source: "slit-sim: src/script.js:204-274 (nm_to_rgb)" }
 role: Sole author. Wrote the interference vertex/fragment shader pair (sinc² envelope, SI-unit parametrisation), the wavelength→RGB conversion, the full Three.js scene graph, the draggable transform-controlled apparatus, the live measurement panel, and the particle-haze system with its sorted exponential-search culling.
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/Slit-Light-Interference-Sim" }

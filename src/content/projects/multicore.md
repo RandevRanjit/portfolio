@@ -7,11 +7,11 @@ spokes:
   - { id: finance, role: flagship, blurb: "Synchronisation cost, NUMA locality, and lock granularity are the same levers that decide whether an HFT pricing loop scales — here they're measured, not asserted: 256× fewer barriers, first-touch page placement, lock-ordering correctness." }
 stack: [C, "C++20", pthreads, OpenMP, "std::barrier", NUMA]
 metrics:
-  - { label: "Temporal-blocking stencil", value: "132.5× @ 72T (124.7× lo-95%)", source: "multicore: lab3-stencil/CHANGELOG.md:28" }
-  - { label: "OpenMP stencil", value: "128.6× @ 72T (116.7× lo-95%)", source: "multicore: lab3-stencil/CHANGELOG.md:30" }
-  - { label: "NUMA vecadd speedup", value: "30.7× @ 72T on 256M doubles", source: "multicore: lab1-vecadd/vecadd/results/statistics.csv:80" }
-  - { label: "Fine-spinlock philosophers", value: "1,039K meals/s @ 64T (mean of 5)", source: "multicore: lab2-philosophers/benchmarks.csv" }
-  - { label: "Sync reduction (stencil)", value: "1 barrier / 128 iters vs 2 / iter", source: "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK=128)" }
+  - { label: "Temporal-blocking stencil", value: "132.5× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:28" }
+  - { label: "OpenMP stencil", value: "128.6× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:30" }
+  - { label: "NUMA vecadd speedup", value: "30.7× speedup", source: "multicore: lab1-vecadd/vecadd/results/statistics.csv:80" }
+  - { label: "Fine-spinlock philosophers", value: "1,039K meals/s", source: "multicore: lab2-philosophers/benchmarks.csv" }
+  - { label: "Sync reduction (stencil)", value: "1 barrier / 128 iters", source: "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK=128)" }
 role: Sole author (s94810rr), three labs. Implemented NUMA first-touch pthreads vecadd; four-variant dining philosophers (coarse/fine × mutex/spinlock) with lock-ordering deadlock prevention; and a temporal-blocking 1-D Poisson stencil in both std::thread+std::barrier and OpenMP. Benchmarked on mcore72 (2× Xeon Platinum 8452Y, 72 cores, 2 NUMA nodes).
 status: case-study
 repo: { kind: case-study }

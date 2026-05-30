@@ -1,18 +1,30 @@
 ---
-// src/components/MetricBlock.astro — mono metric chips, source as title tooltip
+// src/components/MetricBlock.astro — robust wrapping metric chips (source = hover tooltip).
+// Independent bordered chips that flex-wrap; rows are equal-height (flex stretch), so
+// variable-length values can never shatter a shared grid.
 const { metrics } = Astro.props as { metrics: { label: string; value: string; source: string }[] };
 ---
 <dl class="metrics">
   {metrics.map((m) => (
     <div class="metric" title={`source: ${m.source}`}>
-      <dt class="label">{m.label}</dt>
-      <dd class="metric__v mono">{m.value}</dd>
+      <dt class="metric__l">{m.label}</dt>
+      <dd class="metric__v">{m.value}</dd>
     </div>
   ))}
 </dl>
 <style>
-  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0; margin: 1rem 0; border: 2px solid var(--ink); }
-  .metric { padding: .75rem .9rem; border-right: 2px solid var(--ink); }
-  .metric:last-child { border-right: 0; }
-  .metric__v { font-size: 1.35rem; font-weight: 600; color: var(--accent); }
+  .metrics { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.25rem 0; padding: 0; }
+  .metric {
+    flex: 1 1 10rem; min-width: 8.5rem; max-width: 20rem;
+    display: flex; flex-direction: column; gap: .35rem;
+    border: 2px solid var(--ink); padding: .6rem .8rem; margin: 0;
+  }
+  .metric__l {
+    font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--grey); margin: 0; line-height: 1.3;
+  }
+  .metric__v {
+    font-family: var(--font-mono); font-size: 1.02rem; font-weight: 600;
+    color: var(--accent); margin: 0; line-height: 1.25; overflow-wrap: anywhere;
+  }
 </style>

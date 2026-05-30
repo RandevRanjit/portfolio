@@ -8,10 +8,10 @@ spokes:
   - { id: motorsport, role: secondary, blurb: "Carries the dissertation's RRHC controller onto a 3D quad and beats an online-NLP MPCC on lap time at ~1/162 the compute." }
 stack: [Python, NumPy, SciPy, acados, CasADi, Gymnasium, stable-baselines3, Optuna, VisPy]
 metrics:
-  - { label: "Tests", value: "357 passing (4 skip, 1 xfail)", source: "aero-lab: pytest tests/ — 357 passed, 4 skipped, 1 xfailed" }
-  - { label: "Controllers", value: "4 racing + 2 cinematic", source: "aero-lab: src/aerolab/controllers/{pid_dfbc,mpcc,rrhc,rl,aubry}" }
-  - { label: "RRHC vs MPCC", value: "fastest on 10/12 courses, 162x cheaper/tick", source: "aero-lab: runs/telemetry_tuned/results.md" }
-  - { label: "Code", value: "~8.5k src + 6.9k test LOC", source: "aero-lab: wc -l src/ tests/" }
+  - { label: "Tests", value: "357 tests", source: "aero-lab: pytest tests/ — 357 passed, 4 skipped, 1 xfailed" }
+  - { label: "Controllers", value: "6 controllers", source: "aero-lab: src/aerolab/controllers/{pid_dfbc,mpcc,rrhc,rl,aubry}" }
+  - { label: "RRHC vs MPCC", value: "162x cheaper/tick", source: "aero-lab: runs/telemetry_tuned/results.md" }
+  - { label: "Code", value: "~8.5k src LOC", source: "aero-lab: wc -l src/ tests/" }
 role: Sole author. Hand-rolled the 6-DOF rigid-body dynamics (RK4, motor lag, gyroscopic torque, drag), the analytic differential-flatness inner loop shared by every controller, an acados SQP-RTI MPCC, a CTBR PPO env + policy, and a fairness contract (pre-flight + watchdog + post-hoc audit) that enforces identical plant, course, and control rate across all controllers.
 status: working
 repo: { kind: private }

@@ -7,7 +7,7 @@ spokes:
   - { id: finance, role: secondary, blurb: "The one industry entry: a function-calling LLM over a real business catalog. The constraint wasn't a personal toy dataset — it was messy scraped product data with imperial-fraction tolerances and inconsistent spec keys." }
 stack: [Python, FastAPI, SQLModel, "Node/Express", React, "Chakra UI", "OpenAI function-calling", BeautifulSoup, SQLite]
 metrics:
-  - { label: "Catalog (prototype)", value: "314 parts / 11 product types", source: "carrlane: backend/data/alignment_pins.json (314 part_no records)" }
+  - { label: "Catalog (prototype)", value: "314 parts", source: "carrlane: backend/data/alignment_pins.json (314 part_no records)" }
   - { label: "Company catalog", value: "10,000+ parts", source: "CV (Randev_Ranjit FPGA-Trading-CV)" }
   - { label: "LLM tools", value: "9 typed function schemas", source: "carrlane: orchestrator/functions.js:4-112" }
   - { label: "API tests", value: "8 async endpoint tests", source: "carrlane: backend/test/test_api.py" }

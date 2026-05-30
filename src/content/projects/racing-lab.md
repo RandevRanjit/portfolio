@@ -7,9 +7,9 @@ spokes:
   - { id: motorsport, role: flagship, blurb: "Reactive racing controller (RRHC) — 12% faster laps at 1/153 the per-step compute of an MPCC/IPOPT NLP baseline, proven under a runtime-enforced fairness contract." }
 stack: [Python, NumPy, SciPy, CasADi, IPOPT, Optuna]
 metrics:
-  - { label: "Lap time vs MPCC", value: "12.2% faster (164.2s vs 187.1s, 3 laps)", source: "report/sections/06_conclusion.tex:103" }
-  - { label: "Per-step compute", value: "0.13 ms vs 19.88 ms (153x)", source: "report/sections/04_results.tex:43" }
-  - { label: "Deadline overruns (ZOH)", value: "0 vs 1,870 over baseline trial", source: "report/sections/00_abstract.tex:25" }
+  - { label: "Lap time vs MPCC", value: "12.2% faster", source: "report/sections/06_conclusion.tex:103" }
+  - { label: "Per-step compute", value: "153x cheaper", source: "report/sections/04_results.tex:43" }
+  - { label: "Deadline overruns (ZOH)", value: "0 (vs 1,870 MPCC)", source: "report/sections/00_abstract.tex:25" }
   - { label: "Cross-phase significance", value: "Wilcoxon W=253, p=1.9e-5", source: "report/sections/06_conclusion.tex:106" }
 role: Sole author (dissertation). Designed and built the RRHC controller, the MPCC/IPOPT baseline, the 3-DOF Fiala-tyre plant, the fairness-contract harness, and the five-phase statistical evaluation.
 status: case-study

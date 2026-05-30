@@ -32,17 +32,17 @@
         },
         {
           "label": "Tests",
-          "value": "1,314 test fns, 81.9% cov",
+          "value": "1,314 tests",
           "source": "automaton-qts: tests/ + coverage.xml line-rate 0.8189"
         },
         {
           "label": "Crypto contagion (research-stage, n=3)",
-          "value": "+9.2%/event mkt-neutral, Sharpe 1.49 (n=3, small-sample feasibility study)",
+          "value": "+9.2%/event",
           "source": "Internal crypto contagion feasibility report §1 (2026-05-25); not a deployed or validated strategy"
         },
         {
           "label": "Terra linked-peer signal (research-stage, n=3)",
-          "value": "p=0.0009 (Mann-Whitney, 72h)",
+          "value": "p=0.0009 @72h",
           "source": "Internal crypto contagion feasibility report §3; n=3 cascades, pipeline not in public repo"
         }
       ],
@@ -83,17 +83,17 @@
       "metrics": [
         {
           "label": "Accelerator (block)",
-          "value": "4,433 LUT / 1,467 FF / 0 BRAM",
+          "value": "4,433 LUT",
           "source": "Phase 4 SOC report, Table 3 (u_automaton hierarchical utilisation)"
         },
         {
           "label": "Whole SoC fill",
-          "value": "43.81% LUT · 96.0% BRAM",
+          "value": "96.0% BRAM",
           "source": "Phase 4 SOC report, Table 1 (post-implementation, XC7A35T)"
         },
         {
           "label": "Rule space",
-          "value": "256 rules, 1 register",
+          "value": "256 rules",
           "source": "ca-accelerator: Phase2/Phase2/unit_automaton.sv:281-282 (rule_eff[{L,M,R}])"
         },
         {
@@ -142,22 +142,22 @@
       "metrics": [
         {
           "label": "Tests",
-          "value": "357 passing (4 skip, 1 xfail)",
+          "value": "357 tests",
           "source": "aero-lab: pytest tests/ — 357 passed, 4 skipped, 1 xfailed"
         },
         {
           "label": "Controllers",
-          "value": "4 racing + 2 cinematic",
+          "value": "6 controllers",
           "source": "aero-lab: src/aerolab/controllers/{pid_dfbc,mpcc,rrhc,rl,aubry}"
         },
         {
           "label": "RRHC vs MPCC",
-          "value": "fastest on 10/12 courses, 162x cheaper/tick",
+          "value": "162x cheaper/tick",
           "source": "aero-lab: runs/telemetry_tuned/results.md"
         },
         {
           "label": "Code",
-          "value": "~8.5k src + 6.9k test LOC",
+          "value": "~8.5k src LOC",
           "source": "aero-lab: wc -l src/ tests/"
         }
       ],
@@ -193,17 +193,17 @@
       "metrics": [
         {
           "label": "Lap time vs MPCC",
-          "value": "12.2% faster (164.2s vs 187.1s, 3 laps)",
+          "value": "12.2% faster",
           "source": "report/sections/06_conclusion.tex:103"
         },
         {
           "label": "Per-step compute",
-          "value": "0.13 ms vs 19.88 ms (153x)",
+          "value": "153x cheaper",
           "source": "report/sections/04_results.tex:43"
         },
         {
           "label": "Deadline overruns (ZOH)",
-          "value": "0 vs 1,870 over baseline trial",
+          "value": "0 (vs 1,870 MPCC)",
           "source": "report/sections/00_abstract.tex:25"
         },
         {
@@ -263,7 +263,7 @@
         },
         {
           "label": "Timing score",
-          "value": "0 — setup 0, hold 0, all signals fully routed",
+          "value": "0 (timing met)",
           "source": "comp22111-processor: synthesis/Stump_Board/Stump_Board.par:152,179"
         }
       ],
@@ -299,27 +299,27 @@
       "metrics": [
         {
           "label": "Temporal-blocking stencil",
-          "value": "132.5× @ 72T (124.7× lo-95%)",
+          "value": "132.5× @ 72 cores",
           "source": "multicore: lab3-stencil/CHANGELOG.md:28"
         },
         {
           "label": "OpenMP stencil",
-          "value": "128.6× @ 72T (116.7× lo-95%)",
+          "value": "128.6× @ 72 cores",
           "source": "multicore: lab3-stencil/CHANGELOG.md:30"
         },
         {
           "label": "NUMA vecadd speedup",
-          "value": "30.7× @ 72T on 256M doubles",
+          "value": "30.7× speedup",
           "source": "multicore: lab1-vecadd/vecadd/results/statistics.csv:80"
         },
         {
           "label": "Fine-spinlock philosophers",
-          "value": "1,039K meals/s @ 64T (mean of 5)",
+          "value": "1,039K meals/s",
           "source": "multicore: lab2-philosophers/benchmarks.csv"
         },
         {
           "label": "Sync reduction (stencil)",
-          "value": "1 barrier / 128 iters vs 2 / iter",
+          "value": "1 barrier / 128 iters",
           "source": "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK=128)"
         }
       ],
@@ -360,32 +360,32 @@
       "metrics": [
         {
           "label": "Codebase",
-          "value": "79,240 LOC Rust / 143 files / 1 crate",
+          "value": "79.2k LOC Rust",
           "source": "oni-preview: git ls-files '*.rs' | xargs wc -l"
         },
         {
           "label": "Tests",
-          "value": "2,151 unit/async tests",
+          "value": "2,151 tests",
           "source": "oni-preview: grep -rn '#[test]|#[tokio::test]' src/"
         },
         {
           "label": "Parser budget",
-          "value": "< 100 µs / 16-fixture corpus",
+          "value": "<100 µs",
           "source": "oni-preview: benches/parser.rs:8"
         },
         {
           "label": "Tool dispatch budget",
-          "value": "< 5 ms / call",
+          "value": "<5 ms/call",
           "source": "oni-preview: benches/tools.rs:13"
         },
         {
           "label": "Loop-detector budget",
-          "value": "< 50 ns / 1 KB SSE chunk",
+          "value": "<50 ns/KB",
           "source": "oni-preview: benches/lit.rs:6"
         },
         {
           "label": "Backends",
-          "value": "3 (llama.cpp, MLX, oMLX)",
+          "value": "3 backends",
           "source": "oni-preview: src/backend.rs:53"
         }
       ],
@@ -424,27 +424,27 @@
       "metrics": [
         {
           "label": ".als → typed AST",
-          "value": "gzip → roxmltree DOM walk → ProjectAst, 1,306 LOC parser",
+          "value": "1,306 LOC parser",
           "source": "dawgit: dawgit-daemon/src/parsers/ableton.rs"
         },
         {
           "label": "Semantic diff",
-          "value": "21 delta variants (track/clip/device/automation/global), ID-keyed set diff",
+          "value": "21 delta variants",
           "source": "dawgit: dawgit-daemon/src/differ.rs + models.rs:139"
         },
         {
           "label": "Per-file branch commit",
-          "value": "new tree on refs/heads/<b>, HEAD/index/workdir untouched",
+          "value": "HEAD/index untouched",
           "source": "dawgit: dawgit-daemon/src/git/mod.rs:211"
         },
         {
           "label": "Audio LFS",
-          "value": "SHA-256 content-addressed cache + git-lfs v1 pointers, dedup on existence",
+          "value": "SHA-256 content-addressed",
           "source": "dawgit: dawgit-daemon/src/git/lfs.rs:78"
         },
         {
           "label": "Tests",
-          "value": "52 passing (18 parser/differ, 15 git, 19 IPC)",
+          "value": "52 tests",
           "source": "cargo test -p dawgit-daemon"
         }
       ],
@@ -488,22 +488,22 @@
       "metrics": [
         {
           "label": "Codebase",
-          "value": "34,148 LOC C++ (11-person team; ~29k authored by me)",
+          "value": "~29k LOC (of 34k)",
           "source": "git ls-files excl third_party + git blame, 2026-05"
         },
         {
           "label": "Vehicle dynamics",
-          "value": "RK4 + adaptive sub-stepping, 3 models (7/9/29-state)",
+          "value": "RK4 + 3 models (7–29 state)",
           "source": "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60"
         },
         {
           "label": "Stereo camera",
-          "value": "FBO render → PBO glReadPixels readback → ring buffer",
+          "value": "PBO readback + ring buffer",
           "source": "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75"
         },
         {
           "label": "Real-time budgets",
-          "value": "ns-resolution timers, 4 subsystems, swappable clock",
+          "value": "ns-resolution, 4 subsystems",
           "source": "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915"
         }
       ],
@@ -540,7 +540,7 @@
       "metrics": [
         {
           "label": "Codebase",
-          "value": "~10.6k LOC C++ + ~4.5k LOC TS",
+          "value": "~10.6k LOC C++",
           "source": "commonroad: wc -l over lib/app/examples/tests/parameters (10,642) and web-sdk *.ts (4,491)"
         },
         {
@@ -555,7 +555,7 @@
         },
         {
           "label": "Test suite",
-          "value": "19 test files, 19 CTest targets",
+          "value": "19 CTest targets",
           "source": "commonroad: CMakeLists.txt add_test x19; tests/test_*.cpp+py count=19"
         }
       ],
@@ -596,17 +596,17 @@
         },
         {
           "label": "Shader programs",
-          "value": "3 (grid / interference / loading), 6 GLSL files",
+          "value": "3 shader programs",
           "source": "slit-sim: src/shaders/*.glsl"
         },
         {
           "label": "Engine",
-          "value": "~1.65k LOC single-file Three.js app",
+          "value": "~1.65k LOC",
           "source": "slit-sim: src/script.js (wc -l = 1654)"
         },
         {
           "label": "Wavelength→colour",
-          "value": "380–780 nm CIE piecewise → RGB",
+          "value": "380–780 nm CIE→RGB",
           "source": "slit-sim: src/script.js:204-274 (nm_to_rgb)"
         }
       ],
@@ -646,7 +646,7 @@
       "metrics": [
         {
           "label": "Catalog (prototype)",
-          "value": "314 parts / 11 product types",
+          "value": "314 parts",
           "source": "carrlane: backend/data/alignment_pins.json (314 part_no records)"
         },
         {

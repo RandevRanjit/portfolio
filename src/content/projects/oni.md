@@ -8,12 +8,12 @@ spokes:
   - { id: drone, role: secondary, blurb: "An experimental rig, not a product: every harness lever is greenlit and rollback-tracked, every behaviour change validated by scored A/B runs. Correctness is proven, not assumed." }
 stack: [Rust, tokio, reqwest, criterion, llama.cpp, MLX]
 metrics:
-  - { label: "Codebase", value: "79,240 LOC Rust / 143 files / 1 crate", source: "oni-preview: git ls-files '*.rs' | xargs wc -l" }
-  - { label: "Tests", value: "2,151 unit/async tests", source: "oni-preview: grep -rn '#[test]|#[tokio::test]' src/" }
-  - { label: "Parser budget", value: "< 100 µs / 16-fixture corpus", source: "oni-preview: benches/parser.rs:8" }
-  - { label: "Tool dispatch budget", value: "< 5 ms / call", source: "oni-preview: benches/tools.rs:13" }
-  - { label: "Loop-detector budget", value: "< 50 ns / 1 KB SSE chunk", source: "oni-preview: benches/lit.rs:6" }
-  - { label: "Backends", value: "3 (llama.cpp, MLX, oMLX)", source: "oni-preview: src/backend.rs:53" }
+  - { label: "Codebase", value: "79.2k LOC Rust", source: "oni-preview: git ls-files '*.rs' | xargs wc -l" }
+  - { label: "Tests", value: "2,151 tests", source: "oni-preview: grep -rn '#[test]|#[tokio::test]' src/" }
+  - { label: "Parser budget", value: "<100 µs", source: "oni-preview: benches/parser.rs:8" }
+  - { label: "Tool dispatch budget", value: "<5 ms/call", source: "oni-preview: benches/tools.rs:13" }
+  - { label: "Loop-detector budget", value: "<50 ns/KB", source: "oni-preview: benches/lit.rs:6" }
+  - { label: "Backends", value: "3 backends", source: "oni-preview: src/backend.rs:53" }
 role: "Sole author. Designed and built the whole harness: the OMTF v0.4 fenced-code tool protocol and its 33-tool parser, the backend seam abstracting three inference servers, the graph working-memory with BFS gather and harness-managed compaction, the LIT/SIT stream-loop detectors, and the process-group SIGKILL sandbox. Every behaviour-changing feature is greenlit, rollback-tracked, and validated by scored A/B runs."
 status: working
 repo: { kind: private }

@@ -8,9 +8,9 @@ spokes:
 stack: [Python, PyTorch, torchdiffeq, NautilusTrader, hftbacktest, scipy, SQLAlchemy/TimescaleDB]
 metrics:
   - { label: "Code", value: "45.7k LOC Python", source: "automaton-qts: git ls-files '*.py' | xargs wc -l (2026-05-27)" }
-  - { label: "Tests", value: "1,314 test fns, 81.9% cov", source: "automaton-qts: tests/ + coverage.xml line-rate 0.8189" }
-  - { label: "Crypto contagion (research-stage, n=3)", value: "+9.2%/event mkt-neutral, Sharpe 1.49 (n=3, small-sample feasibility study)", source: "Internal crypto contagion feasibility report §1 (2026-05-25); not a deployed or validated strategy" }
-  - { label: "Terra linked-peer signal (research-stage, n=3)", value: "p=0.0009 (Mann-Whitney, 72h)", source: "Internal crypto contagion feasibility report §3; n=3 cascades, pipeline not in public repo" }
+  - { label: "Tests", value: "1,314 tests", source: "automaton-qts: tests/ + coverage.xml line-rate 0.8189" }
+  - { label: "Crypto contagion (research-stage, n=3)", value: "+9.2%/event", source: "Internal crypto contagion feasibility report §1 (2026-05-25); not a deployed or validated strategy" }
+  - { label: "Terra linked-peer signal (research-stage, n=3)", value: "p=0.0009 @72h", source: "Internal crypto contagion feasibility report §3; n=3 cascades, pipeline not in public repo" }
 role: Sole author. Built the signal/risk/execution core, the human-gated LLM oversight trail, an agent-based market simulator for synthetic data, and the relation-typed propagation-graph research line (equity negative + crypto positive).
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/Automaton-QTS" }

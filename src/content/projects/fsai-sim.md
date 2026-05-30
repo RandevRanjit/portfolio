@@ -8,10 +8,10 @@ spokes:
   - { id: drone, role: secondary, blurb: "C++ real-time systems: RK4 adaptive sub-stepping, FBO render + PBO readback, ns-resolution budget timers with a swappable real/simulated clock, SocketCAN + UDP transport — the embedded-systems toolkit." }
 stack: ["C++17", CMake, Eigen, OpenGL, SDL2, ONNXRuntime, OpenCV, SocketCAN]
 metrics:
-  - { label: "Codebase", value: "34,148 LOC C++ (11-person team; ~29k authored by me)", source: "git ls-files excl third_party + git blame, 2026-05" }
-  - { label: "Vehicle dynamics", value: "RK4 + adaptive sub-stepping, 3 models (7/9/29-state)", source: "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60" }
-  - { label: "Stereo camera", value: "FBO render → PBO glReadPixels readback → ring buffer", source: "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75" }
-  - { label: "Real-time budgets", value: "ns-resolution timers, 4 subsystems, swappable clock", source: "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915" }
+  - { label: "Codebase", value: "~29k LOC (of 34k)", source: "git ls-files excl third_party + git blame, 2026-05" }
+  - { label: "Vehicle dynamics", value: "RK4 + 3 models (7–29 state)", source: "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60" }
+  - { label: "Stereo camera", value: "PBO readback + ring buffer", source: "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75" }
+  - { label: "Real-time budgets", value: "ns-resolution, 4 subsystems", source: "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915" }
 role: Architect and sole author of the simulation engine (~29k of 34k LOC). Designed and wrote the velox physics core (RK4 + adaptive sub-stepping, all three CommonRoad vehicle models), the sim loop, the OpenGL FBO stereo camera with PBO readback, the AI-to-VCU CAN interface and UDP S-VCU link, the ns-budget timing + swappable-clock infrastructure, and all common/IO/control libraries. 11-person team project; the ONNX/SIFT/Kalman perception pipeline was teammates' work — it plugs into the camera and pose feeds I built.
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/FSAI-Simulation-C" }
