@@ -20,7 +20,6 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.
 a { color: var(--ink); text-underline-offset: 3px; text-decoration-thickness: 2px; }
 a:hover { color: var(--accent); }
 .label { font-family: var(--font-mono); font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.08em; color: var(--grey); }
-.rule { border: 0; border-top: var(--rule) solid var(--ink); margin: 0; }
 .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
 .section-num { font-family: var(--font-display); color: var(--accent); font-weight: 400; letter-spacing: 0; }
 .mono { font-family: var(--font-mono); }
