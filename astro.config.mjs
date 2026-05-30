@@ -7,4 +7,7 @@ export default defineConfig({
   base: '/portfolio',
   integrations: [sitemap()],
   build: { format: 'directory' },
+  markdown: {
+    shikiConfig: { theme: 'css-variables', wrap: false },
+  },
 });

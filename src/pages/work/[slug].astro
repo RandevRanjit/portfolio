@@ -37,5 +37,28 @@ const primarySpoke = d.spokes[0]?.id;
 <style>
   .stack { display:flex; flex-wrap:wrap; gap:.5rem; list-style:none; padding:0; margin:1rem 0; }
   .prose :global(p) { margin: 1rem 0; }
+  .prose :global(h2) { font-size: var(--fs-h2); margin: 2.25rem 0 .75rem; }
+  .prose :global(h3) { font-size: 1.25rem; margin: 1.75rem 0 .5rem; }
+  .prose :global(ul), .prose :global(ol) { margin: 1rem 0; padding-left: 1.25rem; }
+  .prose :global(li) { margin: .35rem 0; }
+  .prose :global(li::marker) { color: var(--accent); }
+  /* inline code */
+  .prose :global(:not(pre) > code) {
+    font-family: var(--font-mono); font-size: .92em;
+    background: var(--paper-2); border: 1px solid var(--line);
+    padding: .05rem .3rem; border-radius: 0;
+  }
+  /* fenced code block — terminal panel with accent left edge + prompt */
+  .prose :global(pre) {
+    font-family: var(--font-mono); font-size: .86rem; line-height: 1.5;
+    background: var(--paper-2); color: var(--astro-code-foreground);
+    border: 2px solid var(--ink); border-left: 6px solid var(--accent);
+    padding: 1rem 1.1rem; margin: 1.25rem 0; overflow-x: auto;
+  }
+  .prose :global(pre) :global(code) { font-family: var(--font-mono); background: none; border: 0; padding: 0; }
+  /* tables — booktabs-ish, no vertical rules */
+  .prose :global(table) { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .92rem; }
+  .prose :global(th), .prose :global(td) { text-align: left; padding: .5rem .75rem; border-bottom: 2px solid var(--line); }
+  .prose :global(thead) :global(th) { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .05em; font-size: .78rem; color: var(--grey); border-bottom: var(--rule) solid var(--ink); }
   figure { margin: 1.5rem 0; } img { max-width:100%; height:auto; border:2px solid var(--ink); }
 </style>

@@ -33,6 +33,19 @@
   --maxw: 76rem;
   --rule: 3px;
   --radius: 0;
+  /* Shiki css-variables theme — light (terminal/brand) */
+  --astro-code-foreground: #2b2722;
+  --astro-code-background: var(--paper-2);
+  --astro-code-token-comment: #8a857a;
+  --astro-code-token-keyword: #b84800;
+  --astro-code-token-string: #5a6600;
+  --astro-code-token-function: #1d6a7a;
+  --astro-code-token-constant: #7a1f5a;
+  --astro-code-token-number: #7a4200;
+  --astro-code-token-parameter: #2b2722;
+  --astro-code-token-string-expression: #5a6600;
+  --astro-code-token-punctuation: #6b665d;
+  --astro-code-token-link: #1d6a7a;
 }
 [data-theme='dark'] {
   color-scheme: dark;
@@ -49,6 +62,19 @@
   --accent-motorsport: #fe8019;
   --accent-music:      #d4779a;
   --accent-other:      #d4892a;
+  /* Shiki css-variables theme — dark */
+  --astro-code-foreground: #d6d0c2;
+  --astro-code-background: var(--paper-2);
+  --astro-code-token-comment: #8f897c;
+  --astro-code-token-keyword: #fe8019;
+  --astro-code-token-string: #b8bb26;
+  --astro-code-token-function: #83c4cc;
+  --astro-code-token-constant: #d4779a;
+  --astro-code-token-number: #d4892a;
+  --astro-code-token-parameter: #d6d0c2;
+  --astro-code-token-string-expression: #b8bb26;
+  --astro-code-token-punctuation: #a39d8f;
+  --astro-code-token-link: #83c4cc;
 }
 [data-spoke='finance'] { --accent: var(--accent-finance); }
 [data-spoke='drone']   { --accent: var(--accent-drone); }
