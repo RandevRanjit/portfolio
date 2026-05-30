@@ -17,7 +17,7 @@ const projects = defineCollection({
         role: z.enum(['flagship', 'secondary']),
         blurb: z.string(),
       }),
-    ),
+    ).default([]),
     stack: z.array(z.string()),
     metrics: z.array(z.object({ label: z.string(), value: z.string(), source: z.string() })),
     role: z.string(),
