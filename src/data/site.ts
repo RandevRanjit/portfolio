@@ -17,3 +17,10 @@ export const spokeNav = [
   { id: 'drone', label: 'Drone / Music', href: '/drone' },
   { id: 'motorsport', label: 'Motorsport', href: '/motorsport' },
 ];
+export const sectionNav = [
+  { id: 'quant', label: 'Quant', href: '/quant' },
+  { id: 'drones', label: 'Drones', href: '/drones' },
+  { id: 'motorsport', label: 'Motorsport', href: '/motorsport' },
+  { id: 'music', label: 'Music', href: '/music' },
+  { id: 'other', label: 'Other', href: '/other' },
+];

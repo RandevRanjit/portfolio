@@ -1,0 +1,54 @@
+---
+// src/components/SectionBody.astro — renders a section from sections.ts:
+// a header, then each sub-category group (light divider between groups) with a card grid.
+import SectionHeader from './SectionHeader.astro';
+import ProjectCard from './ProjectCard.astro';
+import TermRule from './TermRule.astro';
+import { getCollection } from 'astro:content';
+import { sections, type SectionId } from '../data/sections';
+
+const { id, num } = Astro.props as { id: SectionId; num: string };
+const sec = sections[id];
+const all = await getCollection('projects');
+const byId = new Map(all.map((p) => [p.id, p]));
+---
+<SectionHeader num={num} label={sec.label} intro={sec.intro} />
+<section class="wrap" style="padding-block:2.5rem;">
+  {sec.groups.map((g, gi) => {
+    const items = g.slugs.map((s) => byId.get(s)).filter(Boolean);
+    if (items.length === 0) return null;
+    return (
+      <div class="group">
+        {gi > 0 && <div class="group__rule"><TermRule variant="light" /></div>}
+        <p class="section-num group__h">{g.category.toUpperCase()}</p>
+        <div class="grid">
+          {items.map((p, i) => (
+            <div class="reveal" style={`transition-delay:${i * 80}ms`}>
+              <ProjectCard num={String(i + 1).padStart(2, '0')} slug={p!.id}
+                title={p!.data.title} tagline={p!.data.tagline} stack={p!.data.stack}
+                repoKind={p!.data.repo.kind} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  })}
+  {sec.gaps && sec.gaps.length > 0 && (
+    <div class="gaps">
+      <TermRule variant="light" />
+      <p class="section-num gaps__h">NEXT / WHAT I'D BUILD</p>
+      <ul>{sec.gaps.map((g) => <li>{g}</li>)}</ul>
+    </div>
+  )}
+</section>
+<style>
+  .group { margin-top: 2rem; }
+  .group:first-child { margin-top: 0; }
+  .group__rule { margin-bottom: 1.25rem; }
+  .group__h { margin-bottom: 1rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(18rem,1fr)); gap:1.25rem; }
+  .grid > .reveal { height:100%; }
+  .gaps { margin-top: 2.5rem; }
+  .gaps__h { margin: 1rem 0; }
+  .gaps ul { font-family: var(--font-mono); }
+</style>

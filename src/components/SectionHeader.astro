@@ -1,0 +1,17 @@
+---
+// src/components/SectionHeader.astro
+const { num, label, intro } = Astro.props as { num: string; label: string; intro: string };
+---
+<header class="sec-head">
+  <div class="wrap">
+    <p class="section-num">{num}</p>
+    <h1 class="sec-head__h">{label}</h1>
+    <p class="sec-head__intro">{intro}</p>
+  </div>
+</header>
+<style>
+  .sec-head { background: var(--accent); color: var(--paper); padding-block: 3rem 2.5rem; }
+  .sec-head .section-num { color: var(--paper); opacity: .85; }
+  .sec-head__h { font-size: var(--fs-mega); }
+  .sec-head__intro { max-width: 46rem; font-size: var(--fs-sub); margin-top: .5rem; }
+</style>

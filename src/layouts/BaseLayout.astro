@@ -8,11 +8,11 @@ import Footer from '../components/Footer.astro';
 import TermRule from '../components/TermRule.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
-const { title, description, spoke, current } = Astro.props as
-  { title: string; description?: string; spoke?: string; current?: string };
+const { title, description, spoke, section, current } = Astro.props as
+  { title: string; description?: string; spoke?: string; section?: string; current?: string };
 ---
 <!doctype html>
-<html lang="en" data-spoke={spoke ?? undefined}>
+<html lang="en" data-spoke={spoke ?? undefined} data-section={section ?? undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
