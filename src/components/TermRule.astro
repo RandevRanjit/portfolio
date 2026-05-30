@@ -1,8 +1,13 @@
 ---
-// src/components/TermRule.astro — terminal-style ASCII divider: +==============+
+// src/components/TermRule.astro — terminal-style ASCII divider.
+// variant="full" (default): +==========+   variant="light": +----------+
 // Caps stay at the ends; the middle fill clips via overflow, so it spans any width.
+const { variant = 'full' } = Astro.props as { variant?: 'full' | 'light' };
+const fill = variant === 'light'
+  ? '------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'
+  : '==================================================================================================================================================================================================================================================================================================================';
 ---
-<div class="termrule" aria-hidden="true"><span class="termrule__cap">+</span><span class="termrule__fill">==================================================================================================================================================================================================================================================================================================================================</span><span class="termrule__cap">+</span></div>
+<div class:list={['termrule', `termrule--${variant}`]} aria-hidden="true"><span class="termrule__cap">+</span><span class="termrule__fill">{fill}</span><span class="termrule__cap">+</span></div>
 <style>
   .termrule {
     display: flex;
@@ -17,6 +22,7 @@
     user-select: none;
     margin: 0;
   }
+  .termrule--light { color: var(--grey); font-size: 0.8rem; }
   .termrule__cap { flex: 0 0 auto; }
   .termrule__fill { flex: 1 1 auto; overflow: hidden; }
 </style>
