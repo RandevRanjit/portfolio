@@ -2,6 +2,7 @@
 title: ONI — Local-LLM Agent Harness
 tagline: 79k-LOC single-crate Rust harness driving a local llama.cpp / MLX server through a 33-tool fenced-code protocol, a graph working-memory, and harness-managed compaction — with 2,151 tests and µs/ns Criterion latency contracts.
 order: 7
+section: other
 buckets: [systems]
 spokes:
   - { id: finance, role: secondary, blurb: "Systems Rust under real latency contracts: tokio async, process-group isolation, Criterion-tracked µs/ns budgets on the per-turn hot path — the discipline of low-latency infra." }

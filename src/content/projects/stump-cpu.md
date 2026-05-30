@@ -2,6 +2,7 @@
 title: Stump — 16-bit RISC CPU closed on Spartan-6 silicon
 tagline: A multi-cycle 16-bit RISC processor built bottom-up from RTL primitives in Verilog, then synthesised, placed-and-routed, and timing-closed on a real Spartan-6 at 98% slice occupancy — the first design I carried through the full FPGA back-end flow.
 order: 5
+section: quant
 buckets: [hardware]
 spokes:
   - { id: finance, role: flagship, blurb: "A full RISC CPU — datapath, control FSM, ALU, shifter — designed module-by-module and closed on real Spartan-6 silicon with timing met. Knowing how a processor is built, cycle by cycle, is where the low-latency hardware story starts." }

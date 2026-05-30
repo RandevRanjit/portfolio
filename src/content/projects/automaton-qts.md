@@ -2,6 +2,7 @@
 title: Quant Trading System (Automaton-QTS)
 tagline: A multi-signal trading engine, an agent-based market simulator, and a relation-typed contagion-propagation graph that I proved is dead in equities and alive in crypto.
 order: 1
+section: quant
 buckets: [systems, control]
 spokes:
   - { id: finance, role: flagship, blurb: "Relation-typed propagation operator that transfers to unseen links; research-stage feasibility study (n=3 cascades) finds the mechanism alive in crypto (Terra p=0.0009) and definitively negative in equities (473 events, no edge)." }

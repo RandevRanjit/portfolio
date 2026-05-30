@@ -2,6 +2,7 @@
 title: Cellular-Automaton SoC Accelerator
 tagline: A from-scratch SystemVerilog drawing unit that renders Wolfram cellular automata — programmable rule as a pure lookup, LFSR-seeded, taken through Vivado to silicon and demoed live on a monitor.
 order: 2
+section: quant
 buckets: [hardware]
 spokes:
   - { id: finance, role: flagship, blurb: "Custom fixed-function datapath closed on real Artix-7 silicon — the FPGA→HFT-hardware story, with measured LUT/FF and timing-path reasoning." }

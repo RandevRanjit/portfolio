@@ -2,6 +2,9 @@
 title: Aero-Lab — Quadrotor Flight Sim
 tagline: Hand-rolled 6-DOF quadrotor dynamics plus four racing controllers — PID, MPCC (acados SQP-RTI), a reactive RRHC, and a PPO policy — with PID/MPCC/RRHC benchmarked head-to-head on a 12-course fairness harness.
 order: 3
+section: drones
+lineage:
+  - { note: "RRHC — the interpretable racing controller — was invented in this dissertation project", slug: racing-lab }
 buckets: [control]
 spokes:
   - { id: drone, role: flagship, blurb: "A full quadrotor stack: physics, four controllers, a Gymnasium racing env, and a 12-course benchmark harness — 357 tests passing." }

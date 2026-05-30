@@ -2,6 +2,9 @@
 title: CommonRoad C++ Port
 tagline: ~10.6k LOC C++20 port of the CommonRoad vehicle models (ST / STD / MB) into a static library, derivative outputs matched bit-for-bit against the Python reference to 1e-13, plus a ~4.5k LOC TypeScript SDK whose JS backend is parity-checked field-by-field against the native one.
 order: 10
+section: motorsport
+lineage:
+  - { note: "velox is embedded into the FSAI driverless stack as its physics core", slug: fsai-sim }
 buckets: [systems, control]
 spokes:
   - { id: motorsport, role: secondary, blurb: "C++20 port of the CommonRoad single-track, drift, and 29-state multi-body vehicle models — derivatives proven equal to the academic Python reference to 1e-13, wrapped in a clean SimulationDaemon library with a sub-step scheduler, Pacejka tyre model, EV powertrain, and staged loss-of-control safety." }

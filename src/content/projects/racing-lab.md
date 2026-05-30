@@ -2,6 +2,9 @@
 title: "RRHC vs MPCC: A Reactive Racing Controller That Beats Online Optimisation"
 tagline: Final-year dissertation — a model-free heuristic racing controller, benchmarked against an IPOPT-solved MPCC under an enforced fairness contract.
 order: 4
+section: motorsport
+lineage:
+  - { note: "RRHC ported onto a 3D quadrotor — same algorithm, Formula car to FPV drone", slug: aero-lab }
 buckets: [control]
 spokes:
   - { id: motorsport, role: flagship, blurb: "Reactive racing controller (RRHC) — 12% faster laps at 1/153 the per-step compute of an MPCC/IPOPT NLP baseline, proven under a runtime-enforced fairness contract." }

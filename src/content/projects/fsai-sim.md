@@ -2,6 +2,9 @@
 title: FSAI Driverless Racing Simulator
 tagline: I architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 with adaptive sub-stepping over three CommonRoad vehicle models (7/9/29 state), an OpenGL stereo camera with PBO readback, and ns-budget timing across a software CAN bus. Built on an 11-person Formula Student AI team; I wrote the physics, IO, CAN stack, and common infrastructure. Perception pipeline by teammates.
 order: 9
+section: motorsport
+lineage:
+  - { note: "the physics core is the velox vehicle-dynamics library (CommonRoad C++ Port)", slug: commonroad }
 buckets: [systems, control]
 spokes:
   - { id: motorsport, role: flagship, blurb: "Driverless racing simulator for a Formula Student AI team: RK4 dynamics with adaptive sub-stepping over three runtime-switchable CommonRoad vehicle models, an OpenGL stereo camera, and a CAN link to a separate VCU process." }

@@ -9,6 +9,8 @@ const projects = defineCollection({
     tagline: z.string(),
     order: z.number(),
     buckets: z.array(z.enum(['hardware', 'systems', 'control', 'graphics'])),
+    section: z.enum(['quant', 'drones', 'motorsport', 'music', 'other']),
+    lineage: z.array(z.object({ note: z.string(), slug: z.string() })).default([]),
     spokes: z.array(
       z.object({
         id: z.enum(['finance', 'drone', 'motorsport']),

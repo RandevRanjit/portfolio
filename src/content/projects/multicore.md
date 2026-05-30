@@ -2,6 +2,7 @@
 title: Multicore Computing Labs
 tagline: Three parallelism labs on a 72-core 2-socket NUMA machine — a 132× temporal-blocking Jacobi stencil, a 30.7× NUMA-aware vecadd, and dining philosophers scaling near-linearly to 1.04M meals/s.
 order: 6
+section: quant
 buckets: [systems]
 spokes:
   - { id: finance, role: flagship, blurb: "Synchronisation cost, NUMA locality, and lock granularity are the same levers that decide whether an HFT pricing loop scales — here they're measured, not asserted: 256× fewer barriers, first-touch page placement, lock-ordering correctness." }

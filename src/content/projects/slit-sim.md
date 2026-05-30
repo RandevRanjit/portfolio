@@ -2,6 +2,7 @@
 title: Slit Light Interference Simulator
 tagline: A 3D single-slit Fraunhofer diffraction lab — the sinc² intensity envelope solved per-fragment on the GPU, wrapped in a Three.js scene with draggable apparatus, live wavelength/slit/distance controls and a real-time measurement readout.
 order: 11
+section: other
 buckets: [graphics]
 spokes:
   - { id: drone, role: secondary, blurb: "GPU diffraction physics: sinc² Fraunhofer envelope in GLSL, wavelength→CIE-RGB mapping, 3 shader programs, draggable 3D optics bench." }

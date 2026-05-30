@@ -2,6 +2,7 @@
 title: DAWgit — Git for Ableton Projects
 tagline: A macOS daemon that gives Ableton Live real version control — diffing the music, not the bytes. Semantic .als diff, per-file branching that never touches HEAD, SHA-256 audio LFS, over a Unix-socket IPC bus.
 order: 8
+section: music
 buckets: [systems]
 spokes:
   - { id: drone, role: flagship, blurb: "Version control for Ableton sessions as a systems problem: parse the gzip-XML project into a typed AST, diff at the level of tracks/clips/devices/automation, gate commits on semantic change so viewport-only saves are ignored, branch per .als file without disturbing the working tree." }

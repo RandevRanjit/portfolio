@@ -2,6 +2,7 @@
 title: CarrLane — Engineering Part Catalog Chatbot
 tagline: Three-tier function-calling assistant that turns natural-language part queries into typed API calls over a scraped engineering catalog — built during an industry internship.
 order: 12
+section: other
 buckets: [systems]
 spokes:
   - { id: finance, role: secondary, blurb: "The one industry entry: a function-calling LLM over a real business catalog. The constraint wasn't a personal toy dataset — it was messy scraped product data with imperial-fraction tolerances and inconsistent spec keys." }
