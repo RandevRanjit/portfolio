@@ -13,11 +13,11 @@ const { metrics } = Astro.props as { metrics: { label: string; value: string; so
   ))}
 </dl>
 <style>
-  .metrics { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.25rem 0; padding: 0; }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .6rem; margin: 1.25rem 0; padding: 0; }
   .metric {
-    flex: 1 1 10rem; min-width: 8.5rem; max-width: 20rem;
     display: flex; flex-direction: column; gap: .35rem;
     border: 2px solid var(--ink); padding: .6rem .8rem; margin: 0;
+    min-width: 0;
   }
   .metric__l {
     font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase;
