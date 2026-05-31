@@ -1,165 +1,25 @@
 ---
 // src/components/AsciiAnim.astro
 // Decorative per-project ASCII animation. aria-hidden, purely visual.
-// Engines: cellular | matrix | columns | track | stream | waveform | gauge
-import { asciiBySlug } from '../data/ascii';
+// One bespoke engine per project slug — see ../lib/ascii-engines.ts.
+// SSR renders the static first frame (tick 0); the client script animates
+// it (cards on hover, hero while in view; static under reduced-motion).
+import { asciiFirstFrame } from '../lib/ascii-engines';
 
 interface Props {
   slug: string;
   size: 'card' | 'hero';
 }
-
 const { slug, size } = Astro.props;
 
 // Card dims: 16 cols × 6 rows. Hero dims: 40 cols × 10 rows.
-const CARD_W = 16; const CARD_H = 6;
-const HERO_W = 40; const HERO_H = 10;
-const cols = size === 'hero' ? HERO_W : CARD_W;
-const rows = size === 'hero' ? HERO_H  : CARD_H;
+const cols = size === 'hero' ? 40 : 16;
+const rows = size === 'hero' ? 10 : 6;
 
-const cfg = (asciiBySlug as Record<string, Record<string, unknown>>)[slug] ?? { kind: 'cellular', rule: 30 };
-
-// ── static first-frame generators ──────────────────────────────────────────
-
-function cellular(rule: number, cols: number, rows: number): string {
-  const bits = (n: number) => Array.from({ length: 8 }, (_, i) => (n >> i) & 1);
-  const ruleBits = bits(rule);
-  let row = Array(cols).fill(0);
-  row[Math.floor(cols / 2)] = 1;
-  const lines: string[] = [];
-  for (let r = 0; r < rows; r++) {
-    lines.push(row.map((c) => (c ? '#' : ' ')).join(''));
-    const next = row.map((_, i) => {
-      const l = row[(i - 1 + cols) % cols];
-      const c = row[i];
-      const ri = row[(i + 1) % cols];
-      return ruleBits[l * 4 + c * 2 + ri];
-    });
-    row = next;
-  }
-  return lines.join('\n');
-}
-
-function matrixFrame(cols: number, rows: number): string {
-  return Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, (_, i) => (i % 3 === 0 ? '■' : '·')).join(' ')
-  ).join('\n');
-}
-
-function barsFrame(cols: number, rows: number): string {
-  const glyphs = '▁▂▃▄▅▆▇█';
-  const bars = Array.from({ length: cols }, (_, i) =>
-    glyphs[Math.floor((Math.sin(i * 0.7) * 0.5 + 0.5) * 7)]
-  ).join('');
-  return Array(rows).fill(bars).join('\n');
-}
-
-function trackFrame(cols: number, rows: number, mode: string): string {
-  const mid = Math.floor(rows / 2);
-  return Array.from({ length: rows }, (_, r) => {
-    if (mode === 'road') {
-      if (r === 0 || r === rows - 1) return '─'.repeat(cols);
-      const inner = '─'.repeat(cols - 2);
-      return `|${inner}|`;
-    }
-    if (mode === 'cones') {
-      return Array.from({ length: cols }, (__, c) =>
-        (c % 4 === 0 && Math.abs(r - mid) < 2) ? '^' : ' '
-      ).join('');
-    }
-    // line
-    const offset = Math.round(Math.sin(r * 0.8) * 4);
-    const pos = Math.max(0, Math.min(cols - 1, Math.floor(cols / 2) + offset));
-    return ' '.repeat(pos) + '►' + ' '.repeat(cols - pos - 1);
-  }).join('\n');
-}
-
-function streamFrame(cols: number, rows: number, mode: string): string {
-  if (mode === 'agent') {
-    const lines = [
-      '> read(src/main.rs)  ok',
-      '> bash(cargo build)  ..',
-      '> write(out/bin)     ok',
-      '> read(tests/*.rs)   ok',
-      '> bash(cargo test)   ok',
-      '> read(README.md)    ok',
-      '> bash(git diff)     ..',
-      '> write(CHANGELOG)   ok',
-      '> bash(cargo run)    ok',
-      '> read(config.toml)  ok',
-    ];
-    return lines.slice(0, rows).map((l) => l.slice(0, cols).padEnd(cols)).join('\n');
-  }
-  // catalog
-  const lines = [
-    'PN-4471  bracket     ✓',
-    'PN-1182  servo arm   ✓',
-    'PN-8834  motor ctrl  ✗',
-    'PN-2201  ESC board   ✓',
-    'PN-5512  prop guard  ✓',
-    'PN-3390  IMU unit    ✓',
-    'PN-7743  cable assy  ✓',
-    'PN-9001  frame set   ✗',
-    'PN-0044  PCB v2.1    ✓',
-    'PN-6627  lens ring   ✓',
-  ];
-  return lines.slice(0, rows).map((l) => l.slice(0, cols).padEnd(cols)).join('\n');
-}
-
-function waveformFrame(cols: number, rows: number): string {
-  const mid = Math.floor(rows / 2);
-  return Array.from({ length: rows }, (_, r) => {
-    return Array.from({ length: cols }, (__, c) => {
-      const amp = Math.round(Math.abs(Math.sin(c * 0.4)) * mid);
-      const dist = Math.abs(r - mid);
-      const glyphs = '▁▂▃▄▅▆▇█';
-      if (dist === 0) return glyphs[Math.min(7, amp)];
-      if (dist <= amp) return glyphs[Math.max(0, 7 - dist)];
-      return ' ';
-    }).join('');
-  }).join('\n');
-}
-
-function gaugeFrame(cols: number, rows: number): string {
-  const mid = Math.floor(rows / 2);
-  return Array.from({ length: rows }, (_, r) => {
-    if (r === mid) {
-      // horizon line tilted slightly
-      return '─'.repeat(Math.floor(cols * 0.3)) + '╌'.repeat(Math.floor(cols * 0.4)) + '─'.repeat(cols - Math.floor(cols * 0.7));
-    }
-    if (r >= rows - 2) {
-      // thrust bars at bottom
-      return '▄▄ ▃▃ ▅▅ ▆▆'.slice(0, cols).padEnd(cols);
-    }
-    return ' '.repeat(cols);
-  }).join('\n');
-}
-
-// ── generate the static first frame ────────────────────────────────────────
-let firstFrame = '';
-const kind = cfg.kind as string;
-const mode = (cfg as Record<string, unknown>).mode as string | undefined;
-const rule = (cfg as Record<string, unknown>).rule as number | undefined;
-
-if (kind === 'cellular')  firstFrame = cellular(rule ?? 30, cols, rows);
-else if (kind === 'matrix')    firstFrame = matrixFrame(cols, rows);
-else if (kind === 'columns')   firstFrame = barsFrame(cols, rows);
-else if (kind === 'track')     firstFrame = trackFrame(cols, rows, mode ?? 'line');
-else if (kind === 'stream')    firstFrame = streamFrame(cols, rows, mode ?? 'agent');
-else if (kind === 'waveform')  firstFrame = waveformFrame(cols, rows);
-else if (kind === 'gauge')     firstFrame = gaugeFrame(cols, rows);
-else                           firstFrame = cellular(30, cols, rows);
+const firstFrame = asciiFirstFrame(slug, cols, rows);
 ---
 
-<pre
-  class="ascii-anim"
-  data-slug={slug}
-  data-size={size}
-  data-kind={kind}
-  data-mode={mode ?? ''}
-  data-rule={String(rule ?? 30)}
-  aria-hidden="true"
->{firstFrame}</pre>
+<pre class="ascii-anim" data-slug={slug} data-size={size} aria-hidden="true">{firstFrame}</pre>
 
 <style>
   .ascii-anim {
@@ -193,352 +53,36 @@ else                           firstFrame = cellular(30, cols, rows);
 </style>
 
 <script>
-// AsciiAnim runtime — boots all .ascii-anim elements, one engine each.
-// Runs at ~10 fps; pauses off-screen; card-size only animates on hover.
+// AsciiAnim runtime — boots all .ascii-anim elements, one bespoke engine each
+// (looked up by data-slug). ~10 fps; pauses off-screen; cards animate on hover.
+import { engines, type AsciiEngine } from '../lib/ascii-engines';
 
 (function () {
   'use strict';
 
-  // ── helpers ──────────────────────────────────────────────────────────────
-
   const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function fill(ch: string, n: number): string {
-    return ch.repeat(Math.max(0, n));
+  interface Inst {
+    engine: AsciiEngine;
+    interval: ReturnType<typeof setInterval> | null;
+    t: number;
+    inView: boolean;
+    hovered: boolean;
   }
-
-  function clamp(v: number, lo: number, hi: number): number {
-    return Math.max(lo, Math.min(hi, v));
-  }
-
-  // ── engine state factories ────────────────────────────────────────────────
-
-  interface EngineState {
-    tick: (t: number) => string;
-  }
-
-  function makeCellular(rule: number, cols: number, rows: number): EngineState {
-    const bits = Array.from({ length: 8 }, (_, i) => (rule >> i) & 1);
-    let current = Array(cols).fill(0);
-    current[Math.floor(cols / 2)] = 1;
-    const history: string[] = [];
-    // pre-seed a few rows
-    for (let i = 0; i < rows; i++) {
-      history.push(current.map((c) => (c ? '#' : ' ')).join(''));
-      const next = current.map((_, idx) => {
-        const l = current[(idx - 1 + cols) % cols];
-        const c = current[idx];
-        const r = current[(idx + 1) % cols];
-        return bits[l * 4 + c * 2 + r];
-      });
-      current = next;
-    }
-    return {
-      tick() {
-        history.push(current.map((c) => (c ? '#' : ' ')).join(''));
-        if (history.length > rows * 4) history.shift();
-        const next = current.map((_, idx) => {
-          const l = current[(idx - 1 + cols) % cols];
-          const c = current[idx];
-          const r = current[(idx + 1) % cols];
-          return bits[l * 4 + c * 2 + r];
-        });
-        current = next;
-        return history.slice(-rows).join('\n');
-      },
-    };
-  }
-
-  function makeMatrix(cols: number, rows: number): EngineState {
-    // 8×8 LED-grid sweep: a diagonal wave toggles cells on/off
-    const gridW = Math.min(cols, 8);
-    const gridH = Math.min(rows, 8);
-    const cells = Array.from({ length: gridH }, () => Array(gridW).fill(0));
-    let wave = 0;
-    return {
-      tick(t) {
-        wave = (t >> 1) % (gridW + gridH);
-        for (let r = 0; r < gridH; r++) {
-          for (let c = 0; c < gridW; c++) {
-            cells[r][c] = ((r + c) % (gridW + gridH) === wave) ? 1 :
-              ((r + c + 2) % (gridW + gridH) < 2) ? 1 : 0;
-          }
-        }
-        const cellSize = Math.floor(cols / gridW);
-        return Array.from({ length: rows }, (_, r) => {
-          if (r >= gridH) return fill(' ', cols);
-          return Array.from({ length: gridW }, (__, c) =>
-            (cells[r][c] ? '■' : '·') + fill(' ', cellSize - 1)
-          ).join('').padEnd(cols);
-        }).join('\n');
-      },
-    };
-  }
-
-  function makeColumns(cols: number, rows: number, mode: string): EngineState {
-    const glyphs = '▁▂▃▄▅▆▇█';
-    const heights = Array.from({ length: cols }, (_, i) =>
-      Math.floor((Math.sin(i * 0.7) * 0.5 + 0.5) * 7)
-    );
-    const dirs = Array(cols).fill(1);
-
-    return {
-      tick(t) {
-        if (mode === 'ticker') {
-          // random-walk each bar
-          heights.forEach((_, i) => {
-            if (Math.random() < 0.3) {
-              heights[i] = clamp(heights[i] + dirs[i], 0, 7);
-              if (heights[i] === 0 || heights[i] === 7) dirs[i] *= -1;
-            }
-          });
-        } else if (mode === 'fringes') {
-          // sinc²-shaped intensity profile that shimmers
-          const offset = (t * 0.05) % 1;
-          for (let i = 0; i < cols; i++) {
-            const x = (i / cols - offset) * 6 - 3;
-            const sincSq = x === 0 ? 1 : Math.pow(Math.sin(Math.PI * x) / (Math.PI * x), 2);
-            heights[i] = Math.round(sincSq * 7);
-          }
-        } else if (mode === 'scaling') {
-          // bars grow left→right then reset
-          const progress = (t % 40) / 40;
-          for (let i = 0; i < cols; i++) {
-            heights[i] = i / cols < progress ? clamp(Math.round((i / cols) * 7), 0, 7) : 0;
-          }
-        }
-        const bars = heights.map((h) => glyphs[clamp(h, 0, 7)]).join('');
-        return Array(rows).fill(bars).join('\n');
-      },
-    };
-  }
-
-  function makeTrack(cols: number, rows: number, mode: string): EngineState {
-    let markerPos = 0;
-    const trail: number[] = [];
-    return {
-      tick(t) {
-        const mid = Math.floor(cols / 2);
-        if (mode === 'line') {
-          markerPos = mid + Math.round(Math.sin(t * 0.15) * Math.floor(cols / 4));
-          markerPos = clamp(markerPos, 0, cols - 1);
-          trail.push(markerPos);
-          if (trail.length > rows * 2) trail.shift();
-          const pathRow = Math.floor(rows / 2);
-          return Array.from({ length: rows }, (_, r) => {
-            if (r === pathRow) {
-              const row = Array(cols).fill(' ');
-              // draw trail
-              const trailSlice = trail.slice(-Math.floor(cols / 2));
-              trailSlice.forEach((p, idx) => {
-                if (idx < trailSlice.length - 1 && p >= 0 && p < cols) row[p] = '·';
-              });
-              const cur = trail[trail.length - 1] ?? mid;
-              if (cur >= 0 && cur < cols) row[cur] = '►';
-              return row.join('');
-            }
-            return fill(' ', cols);
-          }).join('\n');
-        } else if (mode === 'cones') {
-          const coneOffset = t % (Math.floor(cols / 2));
-          const midR = Math.floor(rows / 2);
-          return Array.from({ length: rows }, (_, r) => {
-            return Array.from({ length: cols }, (__, c) => {
-              if (r === midR && c === Math.floor(cols / 2) + Math.round(Math.sin(t * 0.1) * 3)) return '►';
-              if ((c + coneOffset) % 6 === 0 && Math.abs(r - midR) <= 1) return '^';
-              return ' ';
-            }).join('');
-          }).join('\n');
-        } else {
-          // road: lane edges scroll
-          const scroll = t % cols;
-          return Array.from({ length: rows }, (_, r) => {
-            if (r === 0 || r === rows - 1) {
-              // road markings scroll
-              return Array.from({ length: cols }, (__, c) =>
-                (c + scroll) % 8 < 4 ? '─' : ' '
-              ).join('');
-            }
-            if (r === Math.floor(rows / 2)) {
-              const mPos = mid + Math.round(Math.sin(t * 0.12) * Math.floor(cols / 6));
-              return fill(' ', clamp(mPos, 0, cols - 2)) + '►' + fill(' ', cols - clamp(mPos, 0, cols - 2) - 1);
-            }
-            return '|' + fill(' ', cols - 2) + '|';
-          }).join('\n');
-        }
-      },
-    };
-  }
-
-  function makeStream(cols: number, rows: number, mode: string): EngineState {
-    const agentTemplates = [
-      '> read({src})   ok',
-      '> bash({cmd})   ..',
-      '> write({out})  ok',
-      '> read({cfg})   ok',
-      '> bash({test})  ok',
-      '> write({log})  ok',
-      '> bash({build}) ..',
-      '> read({mod})   ok',
-      '> bash({run})   ok',
-      '> write({res})  ok',
-    ];
-    const srcFiles = ['src/main.rs', 'src/lib.rs', 'src/engine.rs', 'config.toml', 'tests/*.rs'];
-    const cmds = ['cargo build', 'cargo test', 'cargo clippy', 'git diff', 'make all'];
-    const outs = ['out/bin', 'out/lib.a', 'target/release', 'dist/pkg', 'build/out'];
-
-    const catalogParts = [
-      ['PN-4471','bracket    '],['PN-1182','servo arm  '],['PN-8834','motor ctrl '],
-      ['PN-2201','ESC board  '],['PN-5512','prop guard '],['PN-3390','IMU unit   '],
-      ['PN-7743','cable assy '],['PN-9001','frame set  '],['PN-0044','PCB v2.1   '],
-      ['PN-6627','lens ring  '],['PN-3312','arm fold   '],['PN-8871','battery lk '],
-    ];
-
-    const buffer: string[] = [];
-    let lineTimer = 0;
-
-    function genAgent(): string {
-      const tmpl = agentTemplates[Math.floor(Math.random() * agentTemplates.length)];
-      return tmpl
-        .replace('{src}', srcFiles[Math.floor(Math.random() * srcFiles.length)])
-        .replace('{cmd}', cmds[Math.floor(Math.random() * cmds.length)])
-        .replace('{out}', outs[Math.floor(Math.random() * outs.length)])
-        .replace('{cfg}', srcFiles[Math.floor(Math.random() * srcFiles.length)])
-        .replace('{test}', cmds[Math.floor(Math.random() * cmds.length)])
-        .replace('{log}', outs[Math.floor(Math.random() * outs.length)])
-        .replace('{build}', cmds[Math.floor(Math.random() * cmds.length)])
-        .replace('{mod}', srcFiles[Math.floor(Math.random() * srcFiles.length)])
-        .replace('{run}', cmds[Math.floor(Math.random() * cmds.length)])
-        .replace('{res}', outs[Math.floor(Math.random() * outs.length)])
-        .slice(0, cols).padEnd(cols);
-    }
-
-    let catalogIdx = 0;
-    function genCatalog(): string {
-      const [pn, name] = catalogParts[catalogIdx % catalogParts.length];
-      const ok = Math.random() > 0.2 ? ' ✓' : ' ✗';
-      catalogIdx++;
-      return `${pn}  ${name}${ok}`.slice(0, cols).padEnd(cols);
-    }
-
-    // seed buffer
-    for (let i = 0; i < rows; i++) {
-      buffer.push(mode === 'agent' ? genAgent() : genCatalog());
-    }
-
-    return {
-      tick(_t) {
-        lineTimer++;
-        // add a new line every 3 ticks (~300ms at 10fps)
-        if (lineTimer % 3 === 0) {
-          buffer.push(mode === 'agent' ? genAgent() : genCatalog());
-          if (buffer.length > rows * 3) buffer.shift();
-        }
-        return buffer.slice(-rows).map((l) => l.slice(0, cols).padEnd(cols)).join('\n');
-      },
-    };
-  }
-
-  function makeWaveform(cols: number, rows: number): EngineState {
-    const glyphs = '▁▂▃▄▅▆▇█';
-    const mid = Math.floor(rows / 2);
-    // generate a pseudo-random amplitude envelope
-    const env = Array.from({ length: cols }, (_, i) =>
-      Math.abs(Math.sin(i * 0.31) * Math.cos(i * 0.17)) * 0.9
-    );
-    let phase = 0;
-    return {
-      tick(t) {
-        phase = t * 0.08;
-        return Array.from({ length: rows }, (_, r) => {
-          return Array.from({ length: cols }, (__, c) => {
-            const amp = Math.round(env[(c + Math.floor(phase * 3)) % cols] * mid);
-            const dist = Math.abs(r - mid);
-            if (dist === 0) return glyphs[Math.min(7, amp)];
-            if (dist <= amp) return glyphs[Math.max(0, 6 - dist)];
-            return ' ';
-          }).join('');
-        }).join('\n');
-      },
-    };
-  }
-
-  function makeGauge(cols: number, rows: number): EngineState {
-    const thrustGlyphs = ['▁','▂','▃','▄','▅','▆','▇','█'];
-    let thrust = [4, 3, 5, 6];
-    let tiltAngle = 0;
-    return {
-      tick(t) {
-        tiltAngle = Math.sin(t * 0.08) * 0.4; // radians ~23deg max tilt
-        // update thrust bars
-        thrust = thrust.map((v, i) => {
-          const target = 3 + Math.round(Math.sin(t * 0.07 + i * 1.3) * 3);
-          return clamp(v + Math.sign(target - v) * (Math.random() < 0.4 ? 1 : 0), 0, 7);
-        });
-        const mid = Math.floor(rows / 2);
-        return Array.from({ length: rows }, (_, r) => {
-          if (r === rows - 1) {
-            // thrust bar row
-            const bars = thrust.map((h) => thrustGlyphs[h]).join(' ');
-            const label = '  THRUST: ' + bars;
-            return label.slice(0, cols).padEnd(cols);
-          }
-          if (r === rows - 2) return fill('─', cols);
-          if (r === mid) {
-            // horizon line with tilt — slopes left/right based on tiltAngle
-            const half = Math.floor(cols / 2);
-            let line = '';
-            for (let c = 0; c < cols; c++) {
-              const d = c - half;
-              const slope = Math.round(d * Math.tan(tiltAngle) * 0.3);
-              const effectiveR = mid + slope;
-              line += (r === effectiveR || Math.abs(r - effectiveR) < 1) ? '─' : '·';
-            }
-            return line;
-          }
-          // sky/ground markers
-          if (r < mid - 1) {
-            return (r % 2 === 0 ? '·' : ' ').repeat(cols);
-          }
-          if (r > mid + 1) {
-            return (r % 2 === 0 ? '▒' : '░').repeat(cols);
-          }
-          return fill(' ', cols);
-        }).join('\n');
-      },
-    };
-  }
-
-  // ── boot ─────────────────────────────────────────────────────────────────
 
   function bootAll() {
     const els = document.querySelectorAll<HTMLPreElement>('.ascii-anim');
     if (!els.length) return;
 
-    const instances = new Map<HTMLPreElement, {
-      engine: EngineState;
-      interval: ReturnType<typeof setInterval> | null;
-      t: number;
-      inView: boolean;
-      hovered: boolean;
-    }>();
+    const instances = new Map<HTMLPreElement, Inst>();
 
-    function makeEngine(el: HTMLPreElement) {
-      const kind = el.dataset.kind ?? 'cellular';
-      const mode = el.dataset.mode ?? '';
-      const rule = parseInt(el.dataset.rule ?? '30', 10);
-      const size = el.dataset.size ?? 'card';
+    function makeEngine(el: HTMLPreElement): AsciiEngine {
+      const slug = el.dataset.slug || '';
+      const size = el.dataset.size || 'card';
       const cols = size === 'hero' ? 40 : 16;
       const rows = size === 'hero' ? 10 : 6;
-
-      if (kind === 'cellular')   return makeCellular(rule, cols, rows);
-      if (kind === 'matrix')     return makeMatrix(cols, rows);
-      if (kind === 'columns')    return makeColumns(cols, rows, mode);
-      if (kind === 'track')      return makeTrack(cols, rows, mode);
-      if (kind === 'stream')     return makeStream(cols, rows, mode);
-      if (kind === 'waveform')   return makeWaveform(cols, rows);
-      if (kind === 'gauge')      return makeGauge(cols, rows);
-      return makeCellular(30, cols, rows);
+      const factory = engines[slug] || engines._default;
+      return factory(cols, rows);
     }
 
     function startAnim(el: HTMLPreElement) {
@@ -557,36 +101,31 @@ else                           firstFrame = cellular(30, cols, rows);
       inst.interval = null;
     }
 
-    function shouldAnimate(inst: { inView: boolean; hovered: boolean }, size: string) {
+    function shouldAnimate(inst: Inst, size: string) {
       if (size === 'card') return inst.inView && inst.hovered;
       return inst.inView; // hero: animate while in view
     }
 
     els.forEach((el) => {
       const engine = makeEngine(el);
-      const size = el.dataset.size ?? 'card';
+      const size = el.dataset.size || 'card';
 
       instances.set(el, { engine, interval: null, t: 0, inView: false, hovered: false });
 
       if (REDUCED) return; // static — no animation at all
 
-      // IntersectionObserver for in-view tracking
       const io = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const inst = instances.get(el);
           if (!inst) return;
           inst.inView = entry.isIntersecting;
-          if (shouldAnimate(inst, size)) {
-            startAnim(el);
-          } else {
-            stopAnim(el);
-          }
+          if (shouldAnimate(inst, size)) startAnim(el);
+          else stopAnim(el);
         });
       }, { threshold: 0.1 });
       io.observe(el);
 
       if (size === 'card') {
-        // hover-only for cards
         el.addEventListener('mouseenter', () => {
           const inst = instances.get(el);
           if (!inst) return;
@@ -600,7 +139,6 @@ else                           firstFrame = cellular(30, cols, rows);
           stopAnim(el);
         });
       }
-      // hero: IO alone controls start/stop
     });
   }
 
