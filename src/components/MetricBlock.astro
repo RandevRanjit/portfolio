@@ -17,6 +17,7 @@ const { metrics } = Astro.props as { metrics: { label: string; value: string; so
   .metric {
     flex: 1 1 11rem; min-width: 8rem;
     display: flex; flex-direction: column; gap: .35rem;
+    align-items: center; text-align: center;   /* content centred — reads right whether the chip is narrow or a full-width lone trailing chip */
     border: 2px solid var(--ink); padding: .6rem .8rem; margin: 0;
   }
   .metric__l {

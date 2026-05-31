@@ -207,6 +207,17 @@ check('section-accent-coverage', 'error', (flag) => {
   }
 });
 
+// 14. content headings (--fs-h2, --fs-h3) must be a FIXED size, not viewport-scaled.
+//     Prose/section headings live in a fixed-width reading column; a `vw` term makes
+//     them render at different sizes on different window widths (the "dawgit heading
+//     looks smaller than aero-lab" bug). Display headings (--fs-mega/--fs-h1) may use vw.
+check('content-heading-fixed-size', 'error', (flag) => {
+  for (const tok of ['--fs-h2', '--fs-h3']) {
+    const m = new RegExp(`${tok}:\\s*([^;]+);`).exec(tokensCss);
+    if (m && /\bvw\b/.test(m[1])) flag('src/styles/tokens.css', `${tok} is viewport-scaled ("${m[1].trim()}") — must be fixed so section headings match across widths`);
+  }
+});
+
 // ── report ───────────────────────────────────────────────────────────────────
 let errors = 0, warns = 0;
 console.log('\nCONSISTENCY CONTRACT — portfolio');
