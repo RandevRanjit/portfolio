@@ -4,8 +4,6 @@ tagline: A 3D single-slit Fraunhofer diffraction lab — the sinc² intensity en
 order: 11
 section: other
 buckets: [graphics]
-spokes:
-  - { id: drone, role: secondary, blurb: "GPU diffraction physics: sinc² Fraunhofer envelope in GLSL, wavelength→CIE-RGB mapping, 3 shader programs, draggable 3D optics bench." }
 stack: [JavaScript, "Three.js", GLSL, Tweakpane, Webpack]
 metrics:
   - { label: "Diffraction model", value: "sinc² Fraunhofer envelope, per-fragment", source: "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14" }

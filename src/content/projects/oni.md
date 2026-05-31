@@ -4,9 +4,6 @@ tagline: 79k-LOC single-crate Rust harness driving a local llama.cpp / MLX serve
 order: 7
 section: other
 buckets: [systems]
-spokes:
-  - { id: finance, role: secondary, blurb: "Systems Rust under real latency contracts: tokio async, process-group isolation, Criterion-tracked µs/ns budgets on the per-turn hot path — the discipline of low-latency infra." }
-  - { id: drone, role: secondary, blurb: "An experimental rig, not a product: every harness lever is greenlit and rollback-tracked, every behaviour change validated by scored A/B runs. Correctness is proven, not assumed." }
 stack: [Rust, tokio, reqwest, criterion, llama.cpp, MLX]
 metrics:
   - { label: "Codebase", value: "79.2k LOC Rust", source: "oni-preview: git ls-files '*.rs' | xargs wc -l" }

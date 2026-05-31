@@ -6,8 +6,6 @@ section: motorsport
 lineage:
   - { note: "RRHC ported onto a 3D quadrotor — same algorithm, Formula car to FPV drone", slug: aero-lab }
 buckets: [control]
-spokes:
-  - { id: motorsport, role: flagship, blurb: "Reactive racing controller (RRHC) — 12% faster laps at 1/153 the per-step compute of an MPCC/IPOPT NLP baseline, proven under a runtime-enforced fairness contract." }
 stack: [Python, NumPy, SciPy, CasADi, IPOPT, Optuna]
 metrics:
   - { label: "Lap time vs MPCC", value: "12.2% faster", source: "report/sections/06_conclusion.tex:103" }

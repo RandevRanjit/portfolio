@@ -6,8 +6,6 @@ section: motorsport
 lineage:
   - { note: "velox is embedded into the FSAI driverless stack as its physics core", slug: fsai-sim }
 buckets: [systems, control]
-spokes:
-  - { id: motorsport, role: secondary, blurb: "C++20 port of the CommonRoad single-track, drift, and 29-state multi-body vehicle models — derivatives proven equal to the academic Python reference to 1e-13, wrapped in a clean SimulationDaemon library with a sub-step scheduler, Pacejka tyre model, EV powertrain, and staged loss-of-control safety." }
 stack: ["C++20", CMake, TypeScript, YAML, "SDL2/ImGui"]
 metrics:
   - { label: "Codebase", value: "~10.6k LOC C++", source: "commonroad: wc -l over lib/app/examples/tests/parameters (10,642) and web-sdk *.ts (4,491)" }

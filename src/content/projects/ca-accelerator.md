@@ -4,9 +4,6 @@ tagline: A from-scratch SystemVerilog drawing unit that renders Wolfram cellular
 order: 2
 section: quant
 buckets: [hardware]
-spokes:
-  - { id: finance, role: flagship, blurb: "Custom fixed-function datapath closed on real Artix-7 silicon — the FPGA→HFT-hardware story, with measured LUT/FF and timing-path reasoning." }
-  - { id: drone, role: secondary, blurb: "Embedded hardware: a hand-written accelerator integrated into a RISC-V SoC and driven over MMIO, with live video out." }
 stack: [SystemVerilog, Vivado, Artix-7, RISC-V assembly, Questa]
 metrics:
   - { label: "Accelerator (block)", value: "4,433 LUT", source: "Phase 4 SOC report, Table 3 (u_automaton hierarchical utilisation)" }

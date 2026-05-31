@@ -4,8 +4,6 @@ tagline: A macOS daemon that gives Ableton Live real version control — diffing
 order: 8
 section: music
 buckets: [systems]
-spokes:
-  - { id: drone, role: flagship, blurb: "Version control for Ableton sessions as a systems problem: parse the gzip-XML project into a typed AST, diff at the level of tracks/clips/devices/automation, gate commits on semantic change so viewport-only saves are ignored, branch per .als file without disturbing the working tree." }
 stack: [Rust, tokio, libgit2 (git2-rs), roxmltree, flate2, SHA-256, Unix sockets, launchd, SwiftUI]
 metrics:
   - { label: ".als → typed AST", value: "1,306 LOC parser", source: "dawgit: dawgit-daemon/src/parsers/ableton.rs" }

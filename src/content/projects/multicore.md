@@ -4,8 +4,6 @@ tagline: Three parallelism labs on a 72-core 2-socket NUMA machine — a 132× t
 order: 6
 section: quant
 buckets: [systems]
-spokes:
-  - { id: finance, role: flagship, blurb: "Synchronisation cost, NUMA locality, and lock granularity are the same levers that decide whether an HFT pricing loop scales — here they're measured, not asserted: 256× fewer barriers, first-touch page placement, lock-ordering correctness." }
 stack: [C, "C++20", pthreads, OpenMP, "std::barrier", NUMA]
 metrics:
   - { label: "Temporal-blocking stencil", value: "132.5× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:28" }

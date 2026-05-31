@@ -6,9 +6,6 @@ section: drones
 lineage:
   - { note: "RRHC — the interpretable racing controller — was invented in this dissertation project", slug: racing-lab }
 buckets: [control]
-spokes:
-  - { id: drone, role: flagship, blurb: "A full quadrotor stack: physics, four controllers, a Gymnasium racing env, and a 12-course benchmark harness — 357 tests passing." }
-  - { id: motorsport, role: secondary, blurb: "Carries the dissertation's RRHC controller onto a 3D quad and beats an online-NLP MPCC on lap time at ~1/162 the compute." }
 stack: [Python, NumPy, SciPy, acados, CasADi, Gymnasium, stable-baselines3, Optuna, VisPy]
 metrics:
   - { label: "Tests", value: "357 tests", source: "aero-lab: pytest tests/ — 357 passed, 4 skipped, 1 xfailed" }

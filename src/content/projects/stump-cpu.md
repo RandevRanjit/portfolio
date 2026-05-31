@@ -4,9 +4,6 @@ tagline: A multi-cycle 16-bit RISC processor built bottom-up from RTL primitives
 order: 5
 section: quant
 buckets: [hardware]
-spokes:
-  - { id: finance, role: flagship, blurb: "A full RISC CPU — datapath, control FSM, ALU, shifter — designed module-by-module and closed on real Spartan-6 silicon with timing met. Knowing how a processor is built, cycle by cycle, is where the low-latency hardware story starts." }
-  - { id: drone, role: secondary, blurb: "Bottom-up processor design from register-transfer primitives: register file, muxes, ALU, sign-extender, multi-cycle FSM. The hardware foundation every embedded controller sits on top of." }
 stack: [Verilog-2001, "Xilinx ISE", "Spartan-6 (xc6slx4)", ModelSim, "Stump assembly"]
 metrics:
   - { label: "Slice LUTs", value: "2,068 / 2,400 (86%)", source: "comp22111-processor: synthesis/Stump_Board/Stump_Board.mrp:24" }

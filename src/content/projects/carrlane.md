@@ -4,8 +4,6 @@ tagline: Three-tier function-calling assistant that turns natural-language part 
 order: 12
 section: other
 buckets: [systems]
-spokes:
-  - { id: finance, role: secondary, blurb: "The one industry entry: a function-calling LLM over a real business catalog. The constraint wasn't a personal toy dataset — it was messy scraped product data with imperial-fraction tolerances and inconsistent spec keys." }
 stack: [Python, FastAPI, SQLModel, "Node/Express", React, "Chakra UI", "OpenAI function-calling", BeautifulSoup, SQLite]
 metrics:
   - { label: "Catalog (prototype)", value: "314 parts", source: "carrlane: backend/data/alignment_pins.json (314 part_no records)" }

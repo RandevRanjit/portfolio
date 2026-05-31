@@ -6,9 +6,6 @@ section: motorsport
 lineage:
   - { note: "the physics core is the velox vehicle-dynamics library (CommonRoad C++ Port)", slug: commonroad }
 buckets: [systems, control]
-spokes:
-  - { id: motorsport, role: flagship, blurb: "Driverless racing simulator for a Formula Student AI team: RK4 dynamics with adaptive sub-stepping over three runtime-switchable CommonRoad vehicle models, an OpenGL stereo camera, and a CAN link to a separate VCU process." }
-  - { id: drone, role: secondary, blurb: "C++ real-time systems: RK4 adaptive sub-stepping, FBO render + PBO readback, ns-resolution budget timers with a swappable real/simulated clock, SocketCAN + UDP transport — the embedded-systems toolkit." }
 stack: ["C++17", CMake, Eigen, OpenGL, SDL2, ONNXRuntime, OpenCV, SocketCAN]
 metrics:
   - { label: "Codebase", value: "~29k LOC (of 34k)", source: "git ls-files excl third_party + git blame, 2026-05" }
