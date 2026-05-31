@@ -1,7 +1,7 @@
 ---
 // src/components/MetricBlock.astro — robust wrapping metric chips (source = hover tooltip).
-// Independent bordered chips that flex-wrap; rows are equal-height (flex stretch), so
-// variable-length values can never shatter a shared grid.
+// Flexbox with flex-grow so every row fills the full width — including a partial last
+// row (a lone trailing chip stretches edge-to-edge instead of sitting at one column).
 const { metrics } = Astro.props as { metrics: { label: string; value: string; source: string }[] };
 ---
 <dl class="metrics">
@@ -13,11 +13,11 @@ const { metrics } = Astro.props as { metrics: { label: string; value: string; so
   ))}
 </dl>
 <style>
-  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .6rem; margin: 1.25rem 0; padding: 0; }
+  .metrics { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.25rem 0; padding: 0; }
   .metric {
+    flex: 1 1 11rem; min-width: 8rem;
     display: flex; flex-direction: column; gap: .35rem;
     border: 2px solid var(--ink); padding: .6rem .8rem; margin: 0;
-    min-width: 0;
   }
   .metric__l {
     font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase;
