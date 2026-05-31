@@ -1,6 +1,6 @@
 ---
 title: FSAI Driverless Racing Simulator
-tagline: I architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 with adaptive sub-stepping over three CommonRoad vehicle models (7/9/29 state), an OpenGL stereo camera with PBO readback, and ns-budget timing across a software CAN bus. Built on an 11-person Formula Student AI team; I wrote the physics, IO, CAN stack, and common infrastructure. Perception pipeline by teammates.
+tagline: Architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 adaptive sub-stepping over three CommonRoad models (7/9/29 state), an OpenGL stereo camera (PBO readback), and ns-budget timing across a software CAN bus. On an 11-person Formula Student AI team I wrote the physics, IO, CAN, and infra; perception by teammates.
 order: 9
 section: motorsport
 lineage:
@@ -9,9 +9,9 @@ buckets: [systems, control]
 stack: ["C++17", CMake, Eigen, OpenGL, SDL2, ONNXRuntime, OpenCV, SocketCAN]
 metrics:
   - { label: "Codebase", value: "~29k LOC (of 34k)", source: "git ls-files excl third_party + git blame, 2026-05" }
-  - { label: "Vehicle dynamics", value: "RK4 + 3 models (7–29 state)", source: "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60" }
+  - { label: "Vehicle dynamics", value: "RK4, 3 models (7–29 state)", source: "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60" }
   - { label: "Stereo camera", value: "PBO readback + ring buffer", source: "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75" }
-  - { label: "Real-time budgets", value: "ns-resolution, 4 subsystems", source: "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915" }
+  - { label: "Real-time budgets", value: "ns clock, 4 subsystems", source: "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915" }
 role: Architect and sole author of the simulation engine (~29k of 34k LOC). Designed and wrote the velox physics core (RK4 + adaptive sub-stepping, all three CommonRoad vehicle models), the sim loop, the OpenGL FBO stereo camera with PBO readback, the AI-to-VCU CAN interface and UDP S-VCU link, the ns-budget timing + swappable-clock infrastructure, and all common/IO/control libraries. 11-person team project; the ONNX/SIFT/Kalman perception pipeline was teammates' work — it plugs into the camera and pose feeds I built.
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/FSAI-Simulation-C" }

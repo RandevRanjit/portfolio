@@ -10,7 +10,7 @@ stack: ["C++20", CMake, TypeScript, YAML, "SDL2/ImGui"]
 metrics:
   - { label: "Codebase", value: "~10.6k LOC C++", source: "commonroad: wc -l over lib/app/examples/tests/parameters (10,642) and web-sdk *.ts (4,491)" }
   - { label: "Selectable models", value: "ST / STD / MB (29-state)", source: "commonroad: lib/simulation/model_timing.hpp:9-13, lib/models/vehiclemodels/src/vehicle_dynamics_mb.cpp:20" }
-  - { label: "Derivative parity vs Python", value: "ST/STD to 1e-13, MB to 1e-7", source: "commonroad: tests/test_derivatives.cpp:84,114,184" }
+  - { label: "Derivative parity vs Python", value: "ST/STD 1e-13, MB 1e-7", source: "commonroad: tests/test_derivatives.cpp:84,114,184" }
   - { label: "Test suite", value: "19 CTest targets", source: "commonroad: CMakeLists.txt add_test x19; tests/test_*.cpp+py count=19" }
 role: Sole author. Ported the CommonRoad ST/STD/MB vehicle models from the academic Python reference to a C++20 static library (`velox`), built the `SimulationDaemon` API with a `ModelTiming` sub-step scheduler, Pacejka tyre model, EV powertrain controller, staged low-speed/loss-of-control safety, and a TypeScript web SDK with a JS backend parity-checked against the native one.
 status: working

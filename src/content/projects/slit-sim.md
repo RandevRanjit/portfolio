@@ -6,7 +6,7 @@ section: other
 buckets: [graphics]
 stack: [JavaScript, "Three.js", GLSL, Tweakpane, Webpack]
 metrics:
-  - { label: "Diffraction model", value: "sinc² Fraunhofer envelope, per-fragment", source: "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14" }
+  - { label: "Diffraction model", value: "sinc² Fraunhofer, GPU", source: "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14" }
   - { label: "Shader programs", value: "3 shader programs", source: "slit-sim: src/shaders/*.glsl" }
   - { label: "Engine", value: "~1.65k LOC", source: "slit-sim: src/script.js (wc -l = 1654)" }
   - { label: "Wavelength→colour", value: "380–780 nm CIE→RGB", source: "slit-sim: src/script.js:204-274 (nm_to_rgb)" }

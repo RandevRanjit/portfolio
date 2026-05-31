@@ -401,7 +401,7 @@
     },
     {
       "title": "FSAI Driverless Racing Simulator",
-      "tagline": "I architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 with adaptive sub-stepping over three CommonRoad vehicle models (7/9/29 state), an OpenGL stereo camera with PBO readback, and ns-budget timing across a software CAN bus. Built on an 11-person Formula Student AI team; I wrote the physics, IO, CAN stack, and common infrastructure. Perception pipeline by teammates.",
+      "tagline": "Architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 adaptive sub-stepping over three CommonRoad models (7/9/29 state), an OpenGL stereo camera (PBO readback), and ns-budget timing across a software CAN bus. On an 11-person Formula Student AI team I wrote the physics, IO, CAN, and infra; perception by teammates.",
       "order": 9,
       "section": "motorsport",
       "lineage": [
@@ -432,7 +432,7 @@
         },
         {
           "label": "Vehicle dynamics",
-          "value": "RK4 + 3 models (7–29 state)",
+          "value": "RK4, 3 models (7–29 state)",
           "source": "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60"
         },
         {
@@ -442,7 +442,7 @@
         },
         {
           "label": "Real-time budgets",
-          "value": "ns-resolution, 4 subsystems",
+          "value": "ns clock, 4 subsystems",
           "source": "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915"
         }
       ],
@@ -489,7 +489,7 @@
         },
         {
           "label": "Derivative parity vs Python",
-          "value": "ST/STD to 1e-13, MB to 1e-7",
+          "value": "ST/STD 1e-13, MB 1e-7",
           "source": "commonroad: tests/test_derivatives.cpp:84,114,184"
         },
         {
@@ -524,7 +524,7 @@
       "metrics": [
         {
           "label": "Diffraction model",
-          "value": "sinc² Fraunhofer envelope, per-fragment",
+          "value": "sinc² Fraunhofer, GPU",
           "source": "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14"
         },
         {
