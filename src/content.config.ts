@@ -11,13 +11,6 @@ const projects = defineCollection({
     buckets: z.array(z.enum(['hardware', 'systems', 'control', 'graphics'])),
     section: z.enum(['quant', 'drones', 'motorsport', 'music', 'other']),
     lineage: z.array(z.object({ note: z.string(), slug: z.string() })).default([]),
-    spokes: z.array(
-      z.object({
-        id: z.enum(['finance', 'drone', 'motorsport']),
-        role: z.enum(['flagship', 'secondary']),
-        blurb: z.string(),
-      }),
-    ).default([]),
     stack: z.array(z.string()),
     metrics: z.array(z.object({ label: z.string(), value: z.string(), source: z.string() })),
     role: z.string(),

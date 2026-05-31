@@ -4,6 +4,7 @@ import MetricBlock from '../../components/MetricBlock.astro';
 import AsciiAnim from '../../components/AsciiAnim.astro';
 import TermRule from '../../components/TermRule.astro';
 import { getCollection, render } from 'astro:content';
+import { withBase } from '../../lib/url';
 
 export async function getStaticPaths() {
   const all = await getCollection('projects');
@@ -12,10 +13,9 @@ export async function getStaticPaths() {
 const { p } = Astro.props;
 const { Content } = await render(p);
 const d = p.data;
-// pick a spoke colour for the page from its first spoke
-const primarySpoke = d.spokes[0]?.id;
+const lineage = d.lineage ?? [];
 ---
-<BaseLayout title={d.title} description={d.tagline} spoke={primarySpoke}>
+<BaseLayout title={d.title} description={d.tagline} section={d.section}>
   <article class="wrap reveal" style="padding-block:2.5rem 3.5rem; max-width:52rem;">
     <p class="section-num">{String(d.order).padStart(2, '0')} / {d.buckets.join(' · ').toUpperCase()}</p>
     <h1 style="font-size:var(--fs-h1)">{d.title}</h1>
@@ -32,6 +32,16 @@ const primarySpoke = d.spokes[0]?.id;
     <p class="label">DATES / {d.dates}</p>
     {d.repo.kind === 'public' && d.repo.url && <p><a href={d.repo.url}>View source on GitHub →</a></p>}
     {d.repo.kind !== 'public' && <p class="label">{d.repo.kind === 'private' ? 'Private repository' : 'Case study — private UoM coursework, no code link'}</p>}
+    {lineage.length > 0 && (
+      <div class="lineage">
+        <p class="label">RELATED LINEAGE</p>
+        <ul>
+          {lineage.map((l) => (
+            <li><a href={withBase(`work/${l.slug}`)}>{l.note} →</a></li>
+          ))}
+        </ul>
+      </div>
+    )}
   </article>
 </BaseLayout>
 <style>
@@ -61,4 +71,7 @@ const primarySpoke = d.spokes[0]?.id;
   .prose :global(th), .prose :global(td) { text-align: left; padding: .5rem .75rem; border-bottom: 2px solid var(--line); }
   .prose :global(thead) :global(th) { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .05em; font-size: .78rem; color: var(--grey); border-bottom: var(--rule) solid var(--ink); }
   figure { margin: 1.5rem 0; } img { max-width:100%; height:auto; border:2px solid var(--ink); }
+  .lineage { margin-top: 1.5rem; border-left: 6px solid var(--accent); padding-left: 1rem; }
+  .lineage ul { list-style: none; padding: 0; margin: .25rem 0 0; font-family: var(--font-mono); font-size: .9rem; }
+  .lineage li { margin: .3rem 0; }
 </style>

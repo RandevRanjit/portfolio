@@ -9,9 +9,11 @@
 #let line-c = rgb("#d9d4c7")
 
 #let accents = (
-  finance:    rgb("#1e40ff"),
-  drone:      rgb("#ff4f00"),
-  motorsport: rgb("#e1261c"),
+  quant:      rgb("#1d6a7a"),
+  drones:     rgb("#5a6600"),
+  motorsport: rgb("#b84800"),
+  music:      rgb("#7a1f5a"),
+  other:      rgb("#7a4200"),
 )
 
 // --- helpers ---
@@ -65,9 +67,9 @@
   v(0.3cm)
 
   for p in projects {
-    let accent = accents.at(p.spokes.at(0).id, default: ink)
+    let accent = accents.at(p.section, default: ink)
     let num    = zpad(p.order)
-    let spoke  = upper(p.spokes.at(0).id)
+    let spoke  = upper(p.section)
 
     grid(
       columns: (1.6cm, 1fr, 2.8cm),

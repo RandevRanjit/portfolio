@@ -12,11 +12,6 @@ export const site = {
     cvPdf: '/cv.pdf',
   },
 };
-export const spokeNav = [
-  { id: 'finance', label: 'Finance / Quant', href: '/finance' },
-  { id: 'drone', label: 'Drone / Music', href: '/drone' },
-  { id: 'motorsport', label: 'Motorsport', href: '/motorsport' },
-];
 export const sectionNav = [
   { id: 'quant', label: 'Quant', href: '/quant' },
   { id: 'drones', label: 'Drones', href: '/drones' },

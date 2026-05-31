@@ -4,11 +4,11 @@
 ---
 <div class="ascii-panel" aria-hidden="true">
   <div class="ascii-panel__inner">
-    <span class="ln">+=[ RR ]====================+</span>
-    <span class="ln">| silicon <span class="arrow">-&gt;</span> software       |</span>
-    <span class="ln">| <span class="n n--fin">01 FIN</span>  <span class="n n--drn">02 DRN</span>  <span class="n n--mtr">03 MTR</span>    |</span>
-    <span class="ln ln--bar">| <span class="bar-wrap">[<span class="bar-fill"></span><span class="bar-empty">........</span>]</span> <span class="bar-label">scan</span>   |</span>
-    <span class="ln">+===========================+</span>
+    <span class="ln">+=[ RR ]==========================+</span>
+    <span class="ln">| silicon <span class="arrow">-&gt;</span> software             |</span>
+    <span class="ln">| <span class="n n--qnt">QNT</span> <span class="n n--drn">DRN</span> <span class="n n--mtr">MTR</span> <span class="n n--mus">MUS</span> <span class="n n--oth">OTH</span>          |</span>
+    <span class="ln ln--bar">| <span class="bar-wrap">[<span class="bar-fill"></span><span class="bar-empty">........</span>]</span> <span class="bar-label">scan</span>          |</span>
+    <span class="ln">+=================================+</span>
   </div>
 </div>
 
@@ -30,10 +30,12 @@
   }
   .ln { display: block; }
 
-  /* Spoke number accent colours */
-  .n--fin { color: var(--accent-finance); }
-  .n--drn { color: var(--accent-drone); }
-  .n--mtr { color: var(--accent-motor); }
+  /* Section accent colours */
+  .n--qnt { color: var(--accent-quant); }
+  .n--drn { color: var(--accent-drones); }
+  .n--mtr { color: var(--accent-motorsport); }
+  .n--mus { color: var(--accent-music); }
+  .n--oth { color: var(--accent-other); }
   .arrow  { color: var(--grey); }
 
   /* Scan bar */
@@ -48,7 +50,7 @@
     overflow: hidden;
     vertical-align: bottom;
     white-space: nowrap;
-    color: var(--accent-finance);
+    color: var(--accent-quant);
     /* content injected via ::after so we can truncate */
     width: 0;
     animation: scanbar 2.5s linear infinite;

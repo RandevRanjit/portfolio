@@ -24,11 +24,13 @@
 
 // --- projects, grouped by primary spoke with dividers ---
 // Spoke order: finance → drone → motorsport
-#let spoke-order = ("finance", "drone", "motorsport")
+#let spoke-order = ("quant", "drones", "motorsport", "music", "other")
 #let spoke-labels = (
-  finance:    "Finance / Quant",
-  drone:      "Drone / Music",
+  quant:      "Quantitative Finance",
+  drones:     "Drones",
   motorsport: "Motorsport",
+  music:      "Music",
+  other:      "Other",
 )
 
 // Track which spoke dividers have been printed
@@ -39,7 +41,7 @@
 
 #for spoke-id in spoke-order {
   // Collect projects whose primary spoke matches
-  let group = projects.filter(p => p.spokes.at(0).id == spoke-id)
+  let group = projects.filter(p => p.section == spoke-id)
   if group.len() > 0 {
     spoke-divider(spoke-id, spoke-labels.at(spoke-id))
     for p in group {

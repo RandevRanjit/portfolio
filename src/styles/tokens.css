@@ -9,9 +9,6 @@
   --line: #d9d4c7;
 
   --accent: var(--ink);
-  --accent-finance: #1e40ff;
-  --accent-drone:   #ff4f00;
-  --accent-motor:   #e1261c;
   /* Palette C — 5-section (Gruvbox-anchored), light mode */
   --accent-quant:      #1d6a7a;
   --accent-drones:     #5a6600;
@@ -55,9 +52,6 @@
   --paper-2: #1a1815;
   --grey: #8f897c;
   --line: #2c2823;
-  --accent-finance: #5b78ff;
-  --accent-drone:   #ff6a2b;
-  --accent-motor:   #ff4438;
   --accent-quant:      #83c4cc;
   --accent-drones:     #b8bb26;
   --accent-motorsport: #fe8019;
@@ -77,9 +71,6 @@
   --astro-code-token-punctuation: #a39d8f;
   --astro-code-token-link: #83c4cc;
 }
-[data-spoke='finance'] { --accent: var(--accent-finance); }
-[data-spoke='drone']   { --accent: var(--accent-drone); }
-[data-spoke='motorsport'] { --accent: var(--accent-motor); }
 [data-section='quant']      { --accent: var(--accent-quant); }
 [data-section='drones']     { --accent: var(--accent-drones); }
 [data-section='motorsport'] { --accent: var(--accent-motorsport); }
