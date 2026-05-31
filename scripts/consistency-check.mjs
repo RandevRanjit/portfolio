@@ -159,6 +159,54 @@ check('tagline-length', 'warn', (flag) => {
   }
 });
 
+// ── CSS / token invariants (scan .astro + .css under src) ────────────────────
+function walk(dir, exts, out = []) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, e.name);
+    if (e.isDirectory()) walk(full, exts, out);
+    else if (exts.some((x) => e.name.endsWith(x))) out.push(full);
+  }
+  return out;
+}
+const srcDir = join(ROOT, 'src');
+const styleFiles = walk(srcDir, ['.astro', '.css']).map((f) => ({ path: f, rel: f.replace(ROOT + '/', ''), text: readFileSync(f, 'utf8') }));
+const tokensCss = readFileSync(join(srcDir, 'styles', 'tokens.css'), 'utf8');
+
+// 11. no hardcoded colours in components/pages — everything via tokens
+//     (tokens.css defines them; ascii-engines.ts is .ts, not scanned here)
+check('no-hardcoded-color', 'error', (flag) => {
+  const HEX = /#[0-9a-fA-F]{3,8}\b/;
+  const RGB = /\brgba?\(/;
+  for (const f of styleFiles) {
+    if (f.rel.endsWith('styles/tokens.css')) continue; // the one place colours are defined
+    f.text.split('\n').forEach((line, i) => {
+      const l = line.replace(/\/\/.*$/, '');
+      if (HEX.test(l) || RGB.test(l)) flag(`${f.rel}:${i + 1}`, `hardcoded colour — use a token: ${line.trim().slice(0, 60)}`);
+    });
+  }
+});
+
+// 12. flat design — no non-zero border-radius anywhere
+check('border-radius-zero', 'error', (flag) => {
+  for (const f of styleFiles) {
+    f.text.split('\n').forEach((line, i) => {
+      const m = /border-radius:\s*([^;]+)/.exec(line);
+      if (m && !/^(0|0px|0rem|var\(--radius\))/.test(m[1].trim())) flag(`${f.rel}:${i + 1}`, `non-zero border-radius "${m[1].trim()}" — design is flat`);
+    });
+  }
+});
+
+// 13. all 5 section accents defined in BOTH light (:root) and dark
+check('section-accent-coverage', 'error', (flag) => {
+  const root = tokensCss.split("[data-theme='dark']")[0];
+  const dark = tokensCss.slice(tokensCss.indexOf("[data-theme='dark']"));
+  for (const id of SECTION_IDS) {
+    if (!root.includes(`--accent-${id}:`)) flag('src/styles/tokens.css', `--accent-${id} missing in light mode (:root)`);
+    if (!dark.includes(`--accent-${id}:`)) flag('src/styles/tokens.css', `--accent-${id} missing in [data-theme='dark']`);
+    if (!tokensCss.includes(`[data-section='${id}']`)) flag('src/styles/tokens.css', `[data-section='${id}'] accent resolver missing`);
+  }
+});
+
 // ── report ───────────────────────────────────────────────────────────────────
 let errors = 0, warns = 0;
 console.log('\nCONSISTENCY CONTRACT — portfolio');
