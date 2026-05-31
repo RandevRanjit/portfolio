@@ -4,16 +4,10 @@
       "title": "Quant Trading System (Automaton-QTS)",
       "tagline": "A multi-signal trading engine, an agent-based market simulator, and a relation-typed contagion-propagation graph that I proved is dead in equities and alive in crypto.",
       "order": 1,
+      "section": "quant",
       "buckets": [
         "systems",
         "control"
-      ],
-      "spokes": [
-        {
-          "id": "finance",
-          "role": "flagship",
-          "blurb": "Relation-typed propagation operator that transfers to unseen links; research-stage feasibility study (n=3 cascades) finds the mechanism alive in crypto (Terra p=0.0009) and definitively negative in equities (473 events, no edge)."
-        }
       ],
       "stack": [
         "Python",
@@ -58,20 +52,9 @@
       "title": "Cellular-Automaton SoC Accelerator",
       "tagline": "A from-scratch SystemVerilog drawing unit that renders Wolfram cellular automata — programmable rule as a pure lookup, LFSR-seeded, taken through Vivado to silicon and demoed live on a monitor.",
       "order": 2,
+      "section": "quant",
       "buckets": [
         "hardware"
-      ],
-      "spokes": [
-        {
-          "id": "finance",
-          "role": "flagship",
-          "blurb": "Custom fixed-function datapath closed on real Artix-7 silicon — the FPGA→HFT-hardware story, with measured LUT/FF and timing-path reasoning."
-        },
-        {
-          "id": "drone",
-          "role": "secondary",
-          "blurb": "Embedded hardware: a hand-written accelerator integrated into a RISC-V SoC and driven over MMIO, with live video out."
-        }
       ],
       "stack": [
         "SystemVerilog",
@@ -113,20 +96,15 @@
       "title": "Aero-Lab — Quadrotor Flight Sim",
       "tagline": "Hand-rolled 6-DOF quadrotor dynamics plus four racing controllers — PID, MPCC (acados SQP-RTI), a reactive RRHC, and a PPO policy — with PID/MPCC/RRHC benchmarked head-to-head on a 12-course fairness harness.",
       "order": 3,
+      "section": "drones",
+      "lineage": [
+        {
+          "note": "RRHC — the interpretable racing controller — was invented in this dissertation project",
+          "slug": "racing-lab"
+        }
+      ],
       "buckets": [
         "control"
-      ],
-      "spokes": [
-        {
-          "id": "drone",
-          "role": "flagship",
-          "blurb": "A full quadrotor stack: physics, four controllers, a Gymnasium racing env, and a 12-course benchmark harness — 357 tests passing."
-        },
-        {
-          "id": "motorsport",
-          "role": "secondary",
-          "blurb": "Carries the dissertation's RRHC controller onto a 3D quad and beats an online-NLP MPCC on lap time at ~1/162 the compute."
-        }
       ],
       "stack": [
         "Python",
@@ -172,15 +150,15 @@
       "title": "RRHC vs MPCC: A Reactive Racing Controller That Beats Online Optimisation",
       "tagline": "Final-year dissertation — a model-free heuristic racing controller, benchmarked against an IPOPT-solved MPCC under an enforced fairness contract.",
       "order": 4,
+      "section": "motorsport",
+      "lineage": [
+        {
+          "note": "RRHC ported onto a 3D quadrotor — same algorithm, Formula car to FPV drone",
+          "slug": "aero-lab"
+        }
+      ],
       "buckets": [
         "control"
-      ],
-      "spokes": [
-        {
-          "id": "motorsport",
-          "role": "flagship",
-          "blurb": "Reactive racing controller (RRHC) — 12% faster laps at 1/153 the per-step compute of an MPCC/IPOPT NLP baseline, proven under a runtime-enforced fairness contract."
-        }
       ],
       "stack": [
         "Python",
@@ -223,20 +201,9 @@
       "title": "Stump — 16-bit RISC CPU closed on Spartan-6 silicon",
       "tagline": "A multi-cycle 16-bit RISC processor built bottom-up from RTL primitives in Verilog, then synthesised, placed-and-routed, and timing-closed on a real Spartan-6 at 98% slice occupancy — the first design I carried through the full FPGA back-end flow.",
       "order": 5,
+      "section": "quant",
       "buckets": [
         "hardware"
-      ],
-      "spokes": [
-        {
-          "id": "finance",
-          "role": "flagship",
-          "blurb": "A full RISC CPU — datapath, control FSM, ALU, shifter — designed module-by-module and closed on real Spartan-6 silicon with timing met. Knowing how a processor is built, cycle by cycle, is where the low-latency hardware story starts."
-        },
-        {
-          "id": "drone",
-          "role": "secondary",
-          "blurb": "Bottom-up processor design from register-transfer primitives: register file, muxes, ALU, sign-extender, multi-cycle FSM. The hardware foundation every embedded controller sits on top of."
-        }
       ],
       "stack": [
         "Verilog-2001",
@@ -278,15 +245,9 @@
       "title": "Multicore Computing Labs",
       "tagline": "Three parallelism labs on a 72-core 2-socket NUMA machine — a 132× temporal-blocking Jacobi stencil, a 30.7× NUMA-aware vecadd, and dining philosophers scaling near-linearly to 1.04M meals/s.",
       "order": 6,
+      "section": "quant",
       "buckets": [
         "systems"
-      ],
-      "spokes": [
-        {
-          "id": "finance",
-          "role": "flagship",
-          "blurb": "Synchronisation cost, NUMA locality, and lock granularity are the same levers that decide whether an HFT pricing loop scales — here they're measured, not asserted: 256× fewer barriers, first-touch page placement, lock-ordering correctness."
-        }
       ],
       "stack": [
         "C",
@@ -334,20 +295,9 @@
       "title": "ONI — Local-LLM Agent Harness",
       "tagline": "79k-LOC single-crate Rust harness driving a local llama.cpp / MLX server through a 33-tool fenced-code protocol, a graph working-memory, and harness-managed compaction — with 2,151 tests and µs/ns Criterion latency contracts.",
       "order": 7,
+      "section": "other",
       "buckets": [
         "systems"
-      ],
-      "spokes": [
-        {
-          "id": "finance",
-          "role": "secondary",
-          "blurb": "Systems Rust under real latency contracts: tokio async, process-group isolation, Criterion-tracked µs/ns budgets on the per-turn hot path — the discipline of low-latency infra."
-        },
-        {
-          "id": "drone",
-          "role": "secondary",
-          "blurb": "An experimental rig, not a product: every harness lever is greenlit and rollback-tracked, every behaviour change validated by scored A/B runs. Correctness is proven, not assumed."
-        }
       ],
       "stack": [
         "Rust",
@@ -400,15 +350,9 @@
       "title": "DAWgit — Git for Ableton Projects",
       "tagline": "A macOS daemon that gives Ableton Live real version control — diffing the music, not the bytes. Semantic .als diff, per-file branching that never touches HEAD, SHA-256 audio LFS, over a Unix-socket IPC bus.",
       "order": 8,
+      "section": "music",
       "buckets": [
         "systems"
-      ],
-      "spokes": [
-        {
-          "id": "drone",
-          "role": "flagship",
-          "blurb": "Version control for Ableton sessions as a systems problem: parse the gzip-XML project into a typed AST, diff at the level of tracks/clips/devices/automation, gate commits on semantic change so viewport-only saves are ignored, branch per .als file without disturbing the working tree."
-        }
       ],
       "stack": [
         "Rust",
@@ -459,21 +403,16 @@
       "title": "FSAI Driverless Racing Simulator",
       "tagline": "I architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 with adaptive sub-stepping over three CommonRoad vehicle models (7/9/29 state), an OpenGL stereo camera with PBO readback, and ns-budget timing across a software CAN bus. Built on an 11-person Formula Student AI team; I wrote the physics, IO, CAN stack, and common infrastructure. Perception pipeline by teammates.",
       "order": 9,
+      "section": "motorsport",
+      "lineage": [
+        {
+          "note": "the physics core is the velox vehicle-dynamics library (CommonRoad C++ Port)",
+          "slug": "commonroad"
+        }
+      ],
       "buckets": [
         "systems",
         "control"
-      ],
-      "spokes": [
-        {
-          "id": "motorsport",
-          "role": "flagship",
-          "blurb": "Driverless racing simulator for a Formula Student AI team: RK4 dynamics with adaptive sub-stepping over three runtime-switchable CommonRoad vehicle models, an OpenGL stereo camera, and a CAN link to a separate VCU process."
-        },
-        {
-          "id": "drone",
-          "role": "secondary",
-          "blurb": "C++ real-time systems: RK4 adaptive sub-stepping, FBO render + PBO readback, ns-resolution budget timers with a swappable real/simulated clock, SocketCAN + UDP transport — the embedded-systems toolkit."
-        }
       ],
       "stack": [
         "C++17",
@@ -519,16 +458,16 @@
       "title": "CommonRoad C++ Port",
       "tagline": "~10.6k LOC C++20 port of the CommonRoad vehicle models (ST / STD / MB) into a static library, derivative outputs matched bit-for-bit against the Python reference to 1e-13, plus a ~4.5k LOC TypeScript SDK whose JS backend is parity-checked field-by-field against the native one.",
       "order": 10,
+      "section": "motorsport",
+      "lineage": [
+        {
+          "note": "velox is embedded into the FSAI driverless stack as its physics core",
+          "slug": "fsai-sim"
+        }
+      ],
       "buckets": [
         "systems",
         "control"
-      ],
-      "spokes": [
-        {
-          "id": "motorsport",
-          "role": "secondary",
-          "blurb": "C++20 port of the CommonRoad single-track, drift, and 29-state multi-body vehicle models — derivatives proven equal to the academic Python reference to 1e-13, wrapped in a clean SimulationDaemon library with a sub-step scheduler, Pacejka tyre model, EV powertrain, and staged loss-of-control safety."
-        }
       ],
       "stack": [
         "C++20",
@@ -571,15 +510,9 @@
       "title": "Slit Light Interference Simulator",
       "tagline": "A 3D single-slit Fraunhofer diffraction lab — the sinc² intensity envelope solved per-fragment on the GPU, wrapped in a Three.js scene with draggable apparatus, live wavelength/slit/distance controls and a real-time measurement readout.",
       "order": 11,
+      "section": "other",
       "buckets": [
         "graphics"
-      ],
-      "spokes": [
-        {
-          "id": "drone",
-          "role": "secondary",
-          "blurb": "GPU diffraction physics: sinc² Fraunhofer envelope in GLSL, wavelength→CIE-RGB mapping, 3 shader programs, draggable 3D optics bench."
-        }
       ],
       "stack": [
         "JavaScript",
@@ -622,15 +555,9 @@
       "title": "CarrLane — Engineering Part Catalog Chatbot",
       "tagline": "Three-tier function-calling assistant that turns natural-language part queries into typed API calls over a scraped engineering catalog — built during an industry internship.",
       "order": 12,
+      "section": "other",
       "buckets": [
         "systems"
-      ],
-      "spokes": [
-        {
-          "id": "finance",
-          "role": "secondary",
-          "blurb": "The one industry entry: a function-calling LLM over a real business catalog. The constraint wasn't a personal toy dataset — it was messy scraped product data with imperial-fraction tolerances and inconsistent spec keys."
-        }
       ],
       "stack": [
         "Python",
@@ -676,6 +603,54 @@
         "kind": "private"
       },
       "dates": "Jun–Aug 2025"
+    },
+    {
+      "title": "AUBRY — Autonomous Cinematography Drone",
+      "tagline": "A camera drone that follows a subject and frames the shot itself — a \"follow & react\" trailing controller and a \"cinematic framing\" controller with potential-field obstacle avoidance and a decoupled virtual gimbal, built on the aero-lab racing stack's inner loop.",
+      "order": 13,
+      "section": "drones",
+      "lineage": [
+        {
+          "note": "reuses the aero-lab racing stack's differential-flatness inner loop, untouched",
+          "slug": "aero-lab"
+        }
+      ],
+      "buckets": [
+        "control"
+      ],
+      "stack": [
+        "Python",
+        "NumPy",
+        "VisPy"
+      ],
+      "metrics": [
+        {
+          "label": "Controllers",
+          "value": "2 cinematic",
+          "source": "aero-lab: aubry/follow_controller.py (AUBRYFollowController), aubry/framing_controller.py (AUBRYFramingController)"
+        },
+        {
+          "label": "Source",
+          "value": "470 LOC",
+          "source": "aero-lab: wc -l src/aerolab/controllers/aubry/*.py → 470 total"
+        },
+        {
+          "label": "Obstacle avoidance",
+          "value": "APF + 4-pass detour",
+          "source": "aero-lab: aubry/obstacles.py:51 (repulsion()), aubry/trail.py:21 (_DETOUR_PASSES=4), trail.py:81 (detour loop)"
+        },
+        {
+          "label": "Inner loop",
+          "value": "shared, RRHC untouched",
+          "source": "aero-lab: aubry/follow_controller.py:20,110 + framing_controller.py:20,94 → accel_yaw_to_motor_speeds(); follow_controller.py:6 docstring confirms RRHC unmodified"
+        }
+      ],
+      "role": "Sole author. Designed both cinematic controllers on top of the existing quadrotor stack — a trailing controller that keeps a target arc-length gap behind a moving subject via a rolling breadcrumb spline with iterative obstacle-detour resampling, and a framing controller that holds a relative-pose \"front selfie\" target with artificial-potential-field repulsion and a decoupled virtual gimbal whose look-at is computed in the runner layer independently of the airframe attitude. Both reuse the shared differential-flatness inner loop without touching RRHC.",
+      "status": "working",
+      "repo": {
+        "kind": "private"
+      },
+      "dates": "2026"
     }
   ]
 }
