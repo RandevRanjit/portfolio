@@ -1,0 +1,131 @@
+---
+// src/components/FieldsPanel.astro — interactive ASCII device faceplate = the field navigation.
+// A bigger, wider faceplate where each section code is a clickable, colour-coded link.
+import { sectionNav } from '../data/site';
+import { withBase } from '../lib/url';
+
+const codes: Record<string, string> = {
+  quant: 'QNT', drones: 'DRN', motorsport: 'MTR', music: 'MUS', other: 'OTH',
+};
+const subs: Record<string, string> = {
+  quant: 'quant research',
+  drones: 'uav · flight',
+  motorsport: 'vehicle dynamics',
+  music: 'tooling · gen',
+  other: 'systems · ai',
+};
+---
+<nav class="fp" aria-label="Fields">
+  <div class="fp__rule" aria-hidden="true"><span class="fp__cap">+=[ FIELDS ]=</span><span class="fp__fill">================================================================================================================================</span><span class="fp__cap">+</span></div>
+
+  <div class="fp__body">
+    <ul class="fp__cells">
+      {sectionNav.map((s, i) => (
+        <li class="fp__li">
+          <a class={`fp__cell fp__cell--${s.id}`} href={withBase(s.href)}>
+            <span class="fp__num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="fp__code">{codes[s.id]}</span>
+            <span class="fp__name">{s.label}</span>
+            <span class="fp__sub">{subs[s.id]} →</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="fp__scan" aria-hidden="true">
+      <span class="fp__scanwrap">[<span class="fp__fillbar"></span><span class="fp__hole"></span>]</span>
+      <span class="fp__scanlabel">scan</span>
+    </div>
+  </div>
+
+  <div class="fp__rule" aria-hidden="true"><span class="fp__cap">+</span><span class="fp__fill">================================================================================================================================</span><span class="fp__cap">+</span></div>
+</nav>
+
+<style>
+  .fp { font-family: var(--font-display); color: var(--ink); margin: 1rem 0 0; }
+
+  /* ASCII top/bottom borders — caps pinned, fill clips to any width */
+  .fp__rule {
+    display: flex; align-items: center; font-size: 0.9rem; line-height: 1;
+    white-space: nowrap; overflow: hidden; user-select: none;
+  }
+  .fp__cap { flex: 0 0 auto; }
+  .fp__fill { flex: 1 1 auto; overflow: hidden; }
+
+  /* body framed by | sides */
+  .fp__body { border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); }
+
+  .fp__cells {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+  }
+  .fp__li { display: flex; }
+  .fp__li + .fp__li { } /* dividers handled on the cell */
+  .fp__cell {
+    flex: 1; display: flex; flex-direction: column; gap: .15rem;
+    padding: 1.4rem 1.1rem 1.5rem; text-decoration: none; color: var(--ink);
+    border-left: 1px solid var(--line);
+    transition: background .12s ease, color .12s ease;
+    --c: var(--ink);
+  }
+  .fp__li:first-child .fp__cell { border-left: 0; }
+
+  .fp__num { font-family: var(--font-mono); font-size: .72rem; color: var(--grey); }
+  .fp__code {
+    font-family: var(--font-display); font-size: clamp(1.7rem, 4.2vw, 3rem);
+    line-height: 1; color: var(--c); letter-spacing: 0;
+  }
+  .fp__name { font-family: var(--font-display); font-size: 1.05rem; margin-top: .35rem; }
+  .fp__sub { font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase;
+             letter-spacing: .06em; color: var(--grey); margin-top: .1rem; }
+
+  /* per-section accent + hover fill */
+  .fp__cell--quant      { --c: var(--accent-quant); }
+  .fp__cell--drones     { --c: var(--accent-drones); }
+  .fp__cell--motorsport { --c: var(--accent-motorsport); }
+  .fp__cell--music      { --c: var(--accent-music); }
+  .fp__cell--other      { --c: var(--accent-other); }
+  .fp__cell:hover, .fp__cell:focus-visible { background: var(--c); color: var(--paper); outline: none; }
+  .fp__cell:hover .fp__code, .fp__cell:focus-visible .fp__code,
+  .fp__cell:hover .fp__num,  .fp__cell:focus-visible .fp__num,
+  .fp__cell:hover .fp__sub,  .fp__cell:focus-visible .fp__sub { color: var(--paper); }
+
+  /* scan bar */
+  .fp__scan {
+    display: flex; align-items: center; gap: .6rem;
+    border-top: 1px solid var(--line); padding: .55rem 1.1rem;
+    font-family: var(--font-display); font-size: .9rem;
+  }
+  .fp__scanwrap { display: inline-flex; align-items: center; }
+  .fp__fillbar {
+    display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom;
+    color: var(--accent-quant); width: 0; animation: fp-fill 2.6s linear infinite;
+  }
+  .fp__fillbar::after { content: '||||||||||||||||||||'; }
+  .fp__hole {
+    display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom;
+    color: var(--grey); width: 20ch; animation: fp-hole 2.6s linear infinite;
+  }
+  .fp__hole::after { content: '....................'; }
+  .fp__scanlabel { color: var(--grey); font-family: var(--font-mono); font-size: .72rem;
+                   text-transform: uppercase; letter-spacing: .08em; }
+
+  @keyframes fp-fill { 0% { width: 0ch; } 82% { width: 20ch; } 100% { width: 20ch; } }
+  @keyframes fp-hole { 0% { width: 20ch; } 82% { width: 0ch; } 100% { width: 0ch; } }
+
+  /* responsive: wrap the 5 cells, keep the device frame */
+  @media (max-width: 760px) {
+    .fp__cells { grid-template-columns: repeat(2, 1fr); }
+    .fp__li:nth-child(odd) .fp__cell { border-left: 0; }
+    .fp__cell { border-top: 1px solid var(--line); padding: 1rem .9rem 1.1rem; }
+    .fp__li:nth-child(-n+2) .fp__cell { border-top: 0; }
+  }
+  @media (max-width: 420px) {
+    .fp__cells { grid-template-columns: 1fr; }
+    .fp__cell, .fp__li:nth-child(odd) .fp__cell { border-left: 0; border-top: 1px solid var(--line); }
+    .fp__li:first-child .fp__cell { border-top: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fp__fillbar { animation: none; width: 20ch; }
+    .fp__hole { animation: none; width: 0ch; }
+  }
+</style>
