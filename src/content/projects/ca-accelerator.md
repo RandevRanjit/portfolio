@@ -22,7 +22,7 @@ A 1-D elementary (Wolfram) cellular automaton implemented as a hardware drawing 
 
 The entire transition function is one bit-indexed lookup. For each cell the three-cell neighbourhood `{Left, Middle, Right}` forms a 3-bit index `0..7`, and the next state is simply that bit of the rule register:
 
-```systemverilog
+```verilog
 nb_idx = {L, M, R};        // L=bit2, M=bit1, R=bit0
 nxt    = rule_eff[nb_idx]; // the whole Wolfram rule, as a lookup
 ```
