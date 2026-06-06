@@ -787,6 +787,56 @@ export const engines: Record<string, AsciiEngineFactory> = {
       },
     };
   },
+  'proce-tree': (cols, rows) => {
+    return {
+      tick(t) {
+        const g = Array.from({ length: rows }, () => Array(cols).fill(' '));
+        const put = (x, y, ch) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && x < cols && y >= 0 && y < rows && g[y][x] === ' ') g[y][x] = ch; };
+        const cx = cols >> 1;
+        const sway = Math.round(Math.sin(t * 0.12) * Math.max(1, cols / 18));
+        const trunkTop = Math.max(1, Math.floor(rows * 0.58));
+        for (let y = rows - 1; y >= trunkTop; y--) g[y][cx] = '|';
+        for (let y = trunkTop - 1, k = 1; y >= 0; y--, k++) {
+          const spread = Math.min(cx, k + 1);
+          put(cx - spread + sway, y, '/');
+          put(cx + spread + sway, y, '\\');
+          if (cols >= 28) { put(cx - 1 + sway, y, '/'); put(cx + 1 + sway, y, '\\'); }
+        }
+        for (let y = 0; y < trunkTop; y++) {
+          const w = Math.min(cx, 2 + (trunkTop - y));
+          for (let x = cx - w + sway; x <= cx + w + sway; x++) {
+            if (x < 0 || x >= cols || g[y][x] !== ' ') continue;
+            const n = Math.sin(x * 12.9 + y * 78.2 + Math.floor(t / 5));
+            if (n > 0.2) g[y][x] = n > 0.6 ? '*' : '·';
+          }
+        }
+        return g.map((r) => r.join('')).join('\n');
+      },
+    };
+  },
+  'fsai-unity': (cols, rows) => {
+    return {
+      tick(t) {
+        const g = Array.from({ length: rows }, () => Array(cols).fill(' '));
+        const put = (x, y, ch) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && x < cols && y >= 0 && y < rows) g[y][x] = ch; };
+        const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
+        const rx = cx - 0.5, ry = cy - 0.5;
+        const warpOf = (a) => 1 + 0.18 * Math.sin(a * 3 + 0.6);
+        const N = Math.max(18, cols + 4);
+        for (let i = 0; i < N; i++) {
+          const a = (i / N) * Math.PI * 2;
+          const w = warpOf(a);
+          put(cx + Math.cos(a) * rx * w, cy + Math.sin(a) * ry * w, 'o');
+        }
+        const a = (t * 0.09) % (Math.PI * 2);
+        const carR = 0.78;
+        put(cx + Math.cos(a) * rx * warpOf(a) * carR, cy + Math.sin(a) * ry * warpOf(a) * carR, '#');
+        const a2 = a + 0.28;
+        put(cx + Math.cos(a2) * rx * warpOf(a2) * carR, cy + Math.sin(a2) * ry * warpOf(a2) * carR, '*');
+        return g.map((r) => r.join('')).join('\n');
+      },
+    };
+  },
   _default: (cols, rows) => ({ tick() { return Array.from({ length: rows }, () => ' '.repeat(cols)).join('\n'); } }),
 };
 

@@ -47,7 +47,7 @@ export const sections: Record<SectionId, Section> = {
     intro: 'Vehicle dynamics, interpretable control, and real-time simulation — the RRHC dissertation controller, a Formula Student AI stack, and a C++ vehicle-dynamics library.',
     groups: [
       { category: 'Control', slugs: ['racing-lab', 'aero-lab'] },
-      { category: 'Simulation', slugs: ['fsai-sim', 'commonroad'] },
+      { category: 'Simulation', slugs: ['fsai-sim', 'commonroad', 'fsai-unity'] },
     ],
   },
   music: {
@@ -63,7 +63,7 @@ export const sections: Record<SectionId, Section> = {
     intro: 'Systems, AI, and graphics that don\'t sit under one market — a local-LLM agent research rig, a production chatbot, and a GPU interference simulator.',
     groups: [
       { category: 'Systems & AI', slugs: ['oni', 'carrlane'] },
-      { category: 'Creative', slugs: ['slit-sim'] },
+      { category: 'Creative', slugs: ['slit-sim', 'proce-tree'] },
     ],
   },
 };

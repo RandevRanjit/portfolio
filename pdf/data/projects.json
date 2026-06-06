@@ -651,6 +651,98 @@
         "kind": "private"
       },
       "dates": "2026"
+    },
+    {
+      "title": "Proce-Tree — Procedural Tree Generator",
+      "tagline": "A real-time procedural tree grown from a resource-flow model — branches that steer away from their own crowded canopy, cross-sectional area conserved at every fork, depth-decaying splits, and camera-facing instanced leaves, in Three.js.",
+      "order": 14,
+      "section": "other",
+      "buckets": [
+        "graphics"
+      ],
+      "stack": [
+        "JavaScript",
+        "Three.js",
+        "Vite"
+      ],
+      "metrics": [
+        {
+          "label": "Growth model",
+          "value": "resource-flow + area",
+          "source": "proce-tree: src/tree.js:52-90 (grow / pass ratio)"
+        },
+        {
+          "label": "Branch steering",
+          "value": "canopy-density avoidance",
+          "source": "proce-tree: src/tree.js:140-179 (leafdensity)"
+        },
+        {
+          "label": "Leaves",
+          "value": "instanced billboards",
+          "source": "proce-tree: src/main.js:169-188 (InstancedMesh)"
+        },
+        {
+          "label": "Engine",
+          "value": "~520 LOC",
+          "source": "proce-tree: wc -l src/*.js = 519"
+        }
+      ],
+      "role": "Sole author. Designed the growth algorithm — a binary-splitting branch model fed by a \"growth resource\" that is consumed in proportion to cross-sectional area and conserved across each fork, with branches that compute a weighted-average canopy position and grow *away* from it — plus the Three.js scene, the per-frame branch geometry, and the camera-facing instanced leaf billboards.",
+      "status": "working",
+      "repo": {
+        "kind": "public",
+        "url": "https://github.com/RandevRanjit/Proce-Tree"
+      },
+      "dates": "2026"
+    },
+    {
+      "title": "FSAI Unity Driving Simulator",
+      "tagline": "An earlier Unity/C# Formula Student driving sim — procedurally-generated cone circuits via complex Fourier synthesis with curvature-bounded corners, a dynamic bicycle model (Pacejka tyre + low-speed kinematic blend), driven autonomously by a lookahead path-follower with live telemetry.",
+      "order": 15,
+      "section": "motorsport",
+      "lineage": [
+        {
+          "note": "the production line — this Unity prototype's vehicle-dynamics work moved to the C++ velox library",
+          "slug": "commonroad"
+        }
+      ],
+      "buckets": [
+        "control",
+        "graphics"
+      ],
+      "stack": [
+        "C#",
+        "Unity 6",
+        "System.Numerics"
+      ],
+      "metrics": [
+        {
+          "label": "Tyre model",
+          "value": "Pacejka magic formula",
+          "source": "fsai-unity: Assets/SimulationModels/DynamicBicycleModel/DynamicBicycle.cs:114-125"
+        },
+        {
+          "label": "Track generation",
+          "value": "complex Fourier synthesis",
+          "source": "fsai-unity: Assets/PathLogic/PathGenerator.cs:58-90"
+        },
+        {
+          "label": "Low-speed model",
+          "value": "kinematic blend",
+          "source": "fsai-unity: DynamicBicycle.cs:74-90"
+        },
+        {
+          "label": "C# engine",
+          "value": "~2.6k LOC",
+          "source": "fsai-unity: wc -l Assets custom *.cs = 2619"
+        }
+      ],
+      "role": "Sole author (Formula Student). Wrote the dynamic bicycle vehicle model (Pacejka tyre, aero down/drag-force, low-speed kinematic correction), the procedural cone-track generator (a complex-Fourier path with curvature-derived corner radii and a minimum-radius constraint), the autonomous lookahead path-following controller, and the real-time telemetry + CSV logging — all C# on Unity 6.",
+      "status": "case-study",
+      "repo": {
+        "kind": "private"
+      },
+      "dates": "2025"
     }
   ]
 }
