@@ -21,7 +21,7 @@ export const sectionOrder: SectionId[] = ['quant', 'drones', 'motorsport', 'musi
 export const sections: Record<SectionId, Section> = {
   quant: {
     id: 'quant', label: 'Quantitative Finance', accentVar: 'var(--accent-quant)',
-    intro: 'Low-latency systems across the hardware/software boundary — a relation-typed trading research stack, FPGA RTL closed on real silicon, a RISC CPU, and measured parallelism.',
+    intro: 'Low-latency systems across the hardware/software boundary: a relation-typed trading research stack, FPGA RTL closed on real silicon, a RISC CPU, and measured parallelism.',
     groups: [
       { category: 'Research', slugs: ['automaton-qts'] },
       { category: 'Embedded Hardware', slugs: ['ca-accelerator', 'stump-cpu'] },
@@ -35,7 +35,7 @@ export const sections: Record<SectionId, Section> = {
   },
   drones: {
     id: 'drones', label: 'Drones', accentVar: 'var(--accent-drones)',
-    intro: 'Real-time flight control and autonomy — a hand-rolled 6-DOF quadrotor stack with four racing controllers, a cinematic camera-drone track, and a driverless autonomy core.',
+    intro: 'Real-time flight control and autonomy. A hand-rolled 6-DOF quadrotor stack with four racing controllers, a cinematic camera-drone track, and a driverless autonomy core.',
     groups: [
       { category: 'Control', slugs: ['aero-lab'] },
       { category: 'Autonomy', slugs: ['aubry', 'fsai-sim'] },
@@ -44,7 +44,7 @@ export const sections: Record<SectionId, Section> = {
   },
   motorsport: {
     id: 'motorsport', label: 'Motorsport', accentVar: 'var(--accent-motorsport)',
-    intro: 'Vehicle dynamics, interpretable control, and real-time simulation — the RRHC dissertation controller, a Formula Student AI stack, and a C++ vehicle-dynamics library.',
+    intro: 'Vehicle dynamics, interpretable control and real-time simulation: the RRHC dissertation controller, a Formula Student AI stack, and a C++ vehicle-dynamics library.',
     groups: [
       { category: 'Control', slugs: ['racing-lab', 'aero-lab'] },
       { category: 'Simulation', slugs: ['fsai-sim', 'commonroad', 'fsai-unity'] },
@@ -60,7 +60,7 @@ export const sections: Record<SectionId, Section> = {
   },
   other: {
     id: 'other', label: 'Other', accentVar: 'var(--accent-other)',
-    intro: 'Systems, AI, and graphics that don\'t sit under one market — a local-LLM agent research rig, a production chatbot, and a GPU interference simulator.',
+    intro: 'Systems, AI and graphics that don\'t sit under one market: a local-LLM agent research rig, a production chatbot, and a GPU interference simulator.',
     groups: [
       { category: 'Systems & AI', slugs: ['oni', 'carrlane'] },
       { category: 'Creative', slugs: ['slit-sim', 'proce-tree'] },

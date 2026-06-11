@@ -19,8 +19,8 @@ dates: "2025"
 ---
 
 A C++20 port of the CommonRoad vehicle-dynamics library into a reusable static library (`velox`),
-exposed through a single `SimulationDaemon` API and re-implemented again in TypeScript — with the
-ported maths checked numerically against the original Python at every layer.
+exposed through a single `SimulationDaemon` API and then re-implemented in TypeScript. The ported
+maths is checked numerically against the original Python at every layer.
 
 ## What was actually ported
 
@@ -29,15 +29,16 @@ C++20 (`ModelType{ST, STD, MB}`):
 
 - **ST** — dynamic single-track, 7 states. A linearised bicycle whose cornering stiffnesses
   `C_Sf/C_Sr` are derived from the tyre's Pacejka coefficients.
-- **STD** — single-track drift, same chassis but with the **full Pacejka Magic Formula** tyre
+- **STD** — single-track drift, same chassis but with the full Pacejka Magic Formula tyre
   (pure-longitudinal, pure-lateral, and combined-slip variants in `tire_model.cpp`) so the model
   holds up under oversteer.
 - **MB** — a **29-state multi-body model**: global pose, per-axle roll/pitch/heave, suspension
-  travel, and individual wheel spin. This is the hard one — the state vector and force coupling are
-  long enough that a transcription slip is invisible until the derivative is wrong in the 12th digit.
+  travel, and individual wheel spin. This is the hard one. The state vector and force coupling are
+  long enough that a transcription slip stays invisible until the derivative is wrong in the 12th
+  digit.
 
-A fourth routine, `vehicle_dynamics_ks_cog` (kinematic single-track about the CoG), is **not** a
-selectable model — it is a shared internal helper that ST, STD, and MB all fall back to at low
+A fourth routine, `vehicle_dynamics_ks_cog` (kinematic single-track about the CoG), is not a
+selectable model. It is a shared internal helper that ST, STD, and MB all fall back to at low
 speed (see below).
 
 ## Correctness is proven, not assumed
@@ -46,12 +47,23 @@ speed (see below).
 C++ ST, STD, and MB derivative functions and compares each output element against the ground-truth
 vectors copied from the Python unit tests:
 
-- **ST and STD agree to `1e-13`** — effectively bit-for-bit with the reference.
-- **MB agrees to `1e-7`** across all 29 derivative components — the looser bound reflects the
-  accumulated floating-point error over a far longer computation, not a modelling difference.
+- **ST and STD agree to `1e-13`**, effectively bit-for-bit with the reference.
+- **MB agrees to `1e-7`** across all 29 derivative components. The looser bound is accumulated
+  floating-point error over a far longer computation, not a modelling difference.
+
+Scaled by how many decimal places actually match, the gap between the two bounds looks like this:
+
+```text
+matching decimal places vs the Python ground truth
+
+ST   (7 states)   #############  13   (tol 1e-13)
+STD  (7 states)   #############  13   (tol 1e-13)
+MB   (29 states)  #######         7   (tol 1e-7)
+```
+*Fig. 1 — derivative parity per model, from the tolerances asserted in tests/test_derivatives.cpp.*
 
 That is the claim the whole project rests on: the C++ isn't "close to" the academic model, it
-*is* the academic model. 19 test files and 19 CTest targets back it — derivatives, zero-velocity
+*is* the academic model. 19 test files and 19 CTest targets back it: derivatives, zero-velocity
 edge cases, timestep bounds, the steering controller, low-speed safety, and the loss-of-control
 detector.
 
@@ -72,48 +84,86 @@ longitudinal controllers, the safety system, and the integrator, and exposes `st
 SimulationTelemetry`. Callers pass whatever `dt` their frame loop produces; the daemon decides how
 to integrate it.
 
-That decision is `ModelTiming::plan_steps`. Each model declares a `max_dt`; a requested step larger
-than that is split into N equal sub-steps so the integrator never takes a stride wide enough to go
+That decision is `ModelTiming::plan_steps`. Each model declares a `max_dt`. A requested step larger
+than that is split into N equal sub-steps, so the integrator never takes a stride wide enough to go
 unstable, and any `dt` below `kMinStableDt = 1 ms` is clamped up (with the clamp surfaced in
 telemetry). The scheduler also refuses to create sub-steps thinner than the stable minimum, so a
 huge requested `dt` won't generate thousands of useless micro-steps. The result: a wobbly,
 variable host frame rate can't destabilise the physics.
 
+```text
+ UserInput + host dt (whatever the frame loop gives)
+        |
+        v
++--------------- SimulationDaemon ---------------+
+|                                                |
+|  ModelTiming::plan_steps                       |
+|    dt < kMinStableDt (1 ms) -> clamp up, flag  |
+|    dt > model max_dt        -> N equal         |
+|                                sub-steps       |
+|         |                                      |
+|         v   per sub-step                       |
+|  controllers -> model (ST/STD/MB) -> integrate |
+|  safety: detector + staged controller          |
+|                                                |
++------------------------------------------------+
+        |
+        v
+ SimulationTelemetry snapshot
+```
+*Fig. 2 — one daemon step: the scheduler conditions the host dt before any physics runs.*
+
 ## Powertrain, controllers, telemetry
 
 The longitudinal path is a full controller stack, not a single gain: a `FinalAccelController` that
-blends throttle/brake, an EV `Powertrain` with **state-of-charge tracking, regen torque, and
-power/SOC limits**, plus aero and rolling-resistance models. Every step emits a structured
-`SimulationTelemetry` snapshot — pose, body-frame velocities, slip and lateral-force saturation,
+blends throttle/brake, an EV `Powertrain` with state-of-charge tracking, regen torque, power
+limits, and SOC limits, plus aero and rolling-resistance models. Every step emits a structured
+`SimulationTelemetry` snapshot: pose, body-frame velocities, slip and lateral-force saturation,
 steering desired-vs-actual, powertrain drive/regen/SOC, per-axle wheel torques and friction use,
 and cumulative distance/energy. `to_json` serialises it; an ImGui panel renders it.
 
 ## Staged safety, not a single clamp
 
-Two cooperating systems keep the models stable and honest. A **loss-of-control detector** scores
-yaw rate, slip angle, lateral acceleration, and per-wheel slip ratio against magnitude **and
-rate-of-change** thresholds, returning the worst normalised severity. A **staged low-speed safety
-controller** then moves through `normal → transition → emergency`: severity above 1.0 latches the
+Two cooperating systems keep the models stable and honest. A loss-of-control detector scores
+yaw rate, slip angle, lateral acceleration, and per-wheel slip ratio against both magnitude and
+rate-of-change thresholds, returning the worst normalised severity. A staged low-speed safety
+controller then moves through `normal → transition → emergency`: severity above 1.0 latches the
 emergency stage until speed recovers, with blending between the engage/release bands so dynamics
 ease back to nominal rather than snapping. Drift-capable models load a looser profile by default;
 others opt in via init/reset params or a runtime `UserInput::drift_toggle`. Thresholds live in
 per-model YAML, so retuning never touches code.
 
+```text
+severity = worst normalised score over yaw rate,
+slip angle, lat accel, per-wheel slip (level + rate)
+
++--------+  severity rises   +------------+
+| normal | ----------------> | transition |
++--------+   (blends in)     +------------+
+     ^                             |
+     | speed recovers              |  severity > 1.0
+     |  (blends out)               v  (latches)
+     |                       +-----------+
+     +---------------------- | emergency |
+                             +-----------+
+```
+*Fig. 3 — the staged safety controller; severity above 1.0 latches emergency until speed recovers.*
+
 `reports/low_speed_launch_bug.md` documents where this honesty shows: pinning lateral states to
 zero under full steering lock makes the tyres fight the engine, trapping the car at ~0.2–0.3 m/s.
-The report traces it to the latch and proposes projecting onto the kinematic reference instead — a
-real diagnostic, not a glossy claim.
+The report traces it to the latch and proposes projecting onto the kinematic reference instead.
+A real diagnostic, not a glossy claim.
 
 ## Two implementations, checked against each other
 
-The model was then re-implemented in **~4.5k LOC of TypeScript** (`web-sdk/`) so it can run in the
-browser. The SDK mirrors the C++ structure — daemon, models, Pacejka tyre, controllers, safety,
-telemetry — behind two interchangeable backends: a **pure-JS `JsSimulationBackend`** and a binding
-to the **native** C++ build. `tools/compareNative.ts` drives both through the same scenario
-fixtures, flattens every telemetry field, and reports **per-field RMSE and max-abs-diff against
-configurable tolerances**, flagging any field that drifts past its bound. So the port's correctness
-isn't asserted once at the bottom — it's measured across the language boundary too.
+The model was then re-implemented in ~4.5k LOC of TypeScript (`web-sdk/`) so it can run in the
+browser. The SDK mirrors the C++ structure (daemon, models, Pacejka tyre, controllers, safety,
+telemetry) behind two interchangeable backends: a pure-JS `JsSimulationBackend` and a binding to
+the native C++ build. `tools/compareNative.ts` drives both through the same scenario fixtures,
+flattens every telemetry field, and reports per-field RMSE and max-abs-diff against configurable
+tolerances, flagging any field that drifts past its bound. So the port's correctness isn't
+asserted once at the bottom. It's measured across the language boundary too.
 
 _The transferable skill: reading a non-trivial academic codebase, porting it faithfully, and
-proving — numerically, against the source — that the port behaves identically. Twice, in two
+proving numerically, against the source, that the port behaves identically. Twice, in two
 languages._

@@ -20,46 +20,110 @@ dates: "2025"
 
 The interactive, game-engine take on the Formula Student driving problem: a Unity/C# sim where a car
 drives itself around **procedurally-generated cone circuits**, with the vehicle physics integrated by
-hand rather than handed to Unity's engine. It predates — and fed into — the C++ vehicle-dynamics work
-(`velox` / the FSAI stack) elsewhere in this portfolio; this is where the ideas were first prototyped
-with a renderer attached.
+hand rather than handed to Unity's engine. It predates the C++ vehicle-dynamics work (`velox` / the
+FSAI stack) elsewhere in this portfolio, and fed into it. This is where the ideas were first
+prototyped with a renderer attached.
 
 ## Procedurally-generated cone circuits
 
-Tracks aren't hand-drawn — they're **synthesised in the complex plane.** `PathGenerator`
+Tracks aren't hand-drawn — they're synthesised in the complex plane. `PathGenerator`
 (`PathGenerator.cs:58-90`) samples the unit circle as `z[t] = e^{iθ}`, then sums harmonics
-(frequencies 2…N, each with a random phase) to warp that circle into a closed, wiggly loop. The clever
-part is enforcing drivability: it computes each point's **corner radius from the path's curvature** —
-`|P′|³ / Im(conj(P′)·P″)` (`PathGenerator.cs:41-55`) — and rejects/rescales geometry that violates a
-minimum-corner-radius constraint, so every generated circuit is something a real car could actually take.
-Cones are then placed at a half-track-width offset and checkpoints fall out of the cone geometry.
+(frequencies 2…N, each with a random phase) to warp that circle into a closed, wiggly loop. The
+clever part is enforcing drivability. It computes each point's corner radius from the path's
+curvature, `|P′|³ / Im(conj(P′)·P″)` (`PathGenerator.cs:41-55`), and rejects or rescales geometry
+that violates a minimum-corner-radius constraint, so every generated circuit is something a real
+car could actually take. Cones are then placed at a half-track-width offset and checkpoints fall
+out of the cone geometry.
+
+```text
+  z(t) = e^(i*theta)        sample the unit circle
+          |
+          v
+  sum harmonics 2..N        random phase per harmonic
+          |
+          v
+  closed wiggly loop
+          |
+          v
+  R = |P'|^3 / Im(conj(P')*P'')     corner radius
+          |
+          v
+  R < R_min --yes--> reject / rescale and retry
+          | no
+          v
+  cones at +/- half track width
+          |
+          v
+  checkpoints fall out of the cone geometry
+```
+*Fig. 1 — track synthesis: a Fourier-warped unit circle, curvature-checked against a minimum corner radius, then dressed with cones.*
 
 ## The vehicle: a dynamic bicycle that blends to kinematic at low speed
 
-`DynamicBicycle` (`DynamicBicycle.cs`) integrates a single-track model: lateral forces come from a
-**Pacejka "magic formula" tyre** — `μ_y = D·sin(C·atan(B(1−E)α + E·atan(Bα)))` (`DynamicBicycle.cs:114-125`)
-— with aerodynamic downforce and drag scaling as `v²`, and yaw dynamics from the front/rear cornering
-forces about the axle distances. The honest engineering touch is the **low-speed singularity fix**: a
-pure dynamic bicycle model blows up as `v → 0` (slip angles divide by speed), so `_fKinCorrection`
-(`DynamicBicycle.cs:74-90`) blends the dynamic state toward a **kinematic** model below ~1.5 m/s, so the
-car pulls away from standstill cleanly instead of exploding — the same class of fix the production C++
-models later needed.
+`DynamicBicycle` (`DynamicBicycle.cs`) integrates a single-track model. Lateral forces come from a
+**Pacejka "magic formula" tyre**, `μ_y = D·sin(C·atan(B(1−E)α + E·atan(Bα)))`
+(`DynamicBicycle.cs:114-125`), with aerodynamic downforce and drag scaling as `v²`, and yaw
+dynamics from the front and rear cornering forces about the axle distances. The honest engineering
+touch is the low-speed singularity fix. A pure dynamic bicycle model blows up as `v → 0`, because
+slip angles divide by speed. So `_fKinCorrection` (`DynamicBicycle.cs:74-90`) blends the dynamic
+state toward a kinematic model below ~1.5 m/s, and the car pulls away from standstill cleanly
+instead of exploding — the same class of fix the production C++ models later needed.
+
+```text
+  kinematic weight via _fKinCorrection
+  1.0 |######
+      |      ######
+      |            ######      slip angles divide by v
+      |                  ####  so pure dynamic blows up
+  0.0 +----------------------+----------------------
+      0                  ~1.5 m/s         speed -->
+      |<------ blend ------->|<-- dynamic bicycle --
+                                Pacejka tyre + aero v^2
+```
+*Fig. 2 — the low-speed blend: kinematic weight decays to zero by ~1.5 m/s, where the dynamic bicycle takes over.*
 
 ## Driving it: an autonomous lookahead controller
 
 No human input — a `RacingAlgorithm` (`RacingAlgorithm.cs`) follows the generated line with a
-**speed-dependent look-ahead**: it caches directions and distances to upcoming checkpoints, plans a target
-speed from the upcoming corner angle, and turns the heading error into a steering command via a
-time-to-react model, clamped to the car's real limits (±21° steer, bounded throttle/brake). A telemetry
-overlay shows angle-to-checkpoint, speed, lateral acceleration, yaw rate and lap time live, with optional
-CSV export for offline analysis.
+speed-dependent look-ahead. It caches directions and distances to upcoming checkpoints and plans a
+target speed from the upcoming corner angle. Heading error becomes a steering command via a
+time-to-react model, clamped to the car's real limits (±21° steer, bounded throttle/brake). A
+telemetry overlay shows angle-to-checkpoint, speed, lateral acceleration, yaw rate and lap time
+live, with optional CSV export for offline analysis.
+
+Each physics step runs the same loop:
+
+```text
+  RacingAlgorithm (per physics step)
+  +--------------------------------------------+
+  | checkpoint cache: directions + distances   |
+  |    |                    |                  |
+  |    v                    v                  |
+  | corner angle        heading error          |
+  |    |                    |                  |
+  |    v                    v                  |
+  | target speed        time-to-react model    |
+  |    |                    |                  |
+  |    v                    v                  |
+  | throttle / brake    steering               |
+  | (bounded)           (clamped +/- 21 deg)   |
+  +--------------------------------------------+
+          |
+          v
+  DynamicBicycle integrates one step
+          |
+          +--> telemetry overlay + optional CSV
+          |
+          +--> state feeds the next step
+```
+*Fig. 3 — the per-step control loop, from checkpoint cache to clamped steering, integration, and telemetry.*
 
 ## Honest scope
 
-This is an **archived prototype**, and it's framed as one. The controller is a heuristic look-ahead, not
-an optimal (MPC/LQR) planner; the sim is validated by *running* — lap completion, sane telemetry — not
-against real-vehicle data; and it's a single scene with one vehicle model. Its real value is as the
-**Unity-era exploration** of vehicle dynamics, procedural tracks, and autonomous control that the
-production work then re-implemented in C++ (`velox`, the FSAI simulator) — faster, instrumented, and
-embedded in the real driverless pipeline. Shown here for the breadth (game-engine + C# + the procedural-track
-maths) and the lineage, not as the finished article.
+This is an **archived prototype**, and it's framed as one. The controller is a heuristic
+look-ahead, not an optimal (MPC/LQR) planner. The sim is validated by *running* (lap completion,
+sane telemetry), not against real-vehicle data. And it's a single scene with one vehicle model. Its
+real value is as the Unity-era exploration of vehicle dynamics, procedural tracks, and autonomous
+control that the production work then re-implemented in C++ (`velox`, the FSAI simulator): faster
+and instrumented, embedded in the real driverless pipeline. Shown here for the breadth (game-engine
++ C# + the procedural-track maths) and the lineage, not as the finished article.

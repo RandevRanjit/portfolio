@@ -27,18 +27,55 @@ nb_idx = {L, M, R};        // L=bit2, M=bit1, R=bit0
 nxt    = rule_eff[nb_idx]; // the whole Wolfram rule, as a lookup
 ```
 
-That's the genuinely nice part: **all 256 elementary rules live in a single 8-bit register** (`r2[7:0]`), so the host reconfigures the automaton's behaviour at runtime with one MMIO write and *zero* logic change. Writing 0 falls back to Rule 30 (`8'h1E`). There is no per-rule case statement, no recompile — the rule *is* the data. Edge cells use zero-padded neighbours.
+That's the genuinely nice part: **all 256 elementary rules live in a single 8-bit register** (`r2[7:0]`), so the host reconfigures the automaton's behaviour at runtime with one MMIO write and zero logic change. Writing 0 falls back to Rule 30 (`8'h1E`). There is no per-rule case statement, no recompile — the rule *is* the data. Edge cells use zero-padded neighbours.
+
+```text
+ row N     ... [ L ] [ M ] [ R ] ...    edges zero-padded
+                 |     |     |
+               bit2  bit1  bit0
+                  \    |    /
+                  +----+----+
+                       |
+                 nb_idx (0..7)
+                       |   selects one bit of r2
+                       v
+        r2[7:0]   the rule register   (all 256 rules)
+                       |
+                       v
+             nxt = rule_eff[nb_idx]
+                       |
+                       v
+ row N+1            [ nxt ]
+```
+*Fig. 1 — the whole transition function: a 3-bit neighbourhood index selecting one bit of the 8-bit rule register.*
 
 ## Seeding: deterministic but rich
 
-Row 0 is seeded from `r1`. A seed of `0` plants a single hot cell in the centre (the classic textbook seed that grows the Sierpinski triangle). Any non-zero seed is run through a **32-bit maximal-length LFSR** (taps at bits 0, 1, 21, 31 — polynomial x³² + x²² + x² + x + 1) to fill the first row with a pseudo-random but fully repeatable pattern. One register selects between "clean fractal" and "noisy initial condition".
+Row 0 is seeded from `r1`. A seed of `0` plants a single hot cell in the centre, the classic textbook seed that grows the Sierpinski triangle. Any non-zero seed is run through a 32-bit maximal-length LFSR (taps at bits 0, 1, 21, 31; polynomial x³² + x²² + x² + x + 1) to fill the first row with a pseudo-random but fully repeatable pattern. Same seed, same first row, every run. One register selects between "clean fractal" and "noisy initial condition".
 
 ## The hard part: a streaming compute/write FSM over a shared memory bus
 
-This isn't a pure combinational generator — it has to *write pixels into a framebuffer it shares with the rest of the drawing engine*, and it cannot assume the memory is ever ready. So the datapath is a 3-state machine (`C_IDLE → C_RUN → C_DONE`) that interleaves computing the next row with issuing single-byte framestore writes:
+This isn't a pure combinational generator. It has to *write pixels into a framebuffer it shares with the rest of the drawing engine*, and it cannot assume the memory is ever ready. So the datapath is a 3-state machine (`C_IDLE → C_RUN → C_DONE`) that interleaves computing the next row with issuing single-byte framestore writes.
 
-- **Addressing is byte-packed.** The framebuffer is 4 pixels per 32-bit word, so a pixel at `(x, y)` maps to word address `y·(W/4) + (x>>2)`, with `x[1:0]` selecting the byte lane. Writes go out with an **active-low byte-enable mask** (`de_nbyte`) so a single pixel is written without a read-modify-write.
-- **Backpressure is respected, not assumed.** Every write holds `de_req` high and only advances on `de_ack`; if the arbiter stalls, the FSM freezes the address/data/enable and waits. This is the correctness trap in shared-memory accelerators, and it's handled explicitly in `C_RUN`.
+```text
+   +--------+     GO (MMIO)      +--------------------+
+   | C_IDLE | ------------------>| C_RUN              |
+   +--------+                    |  compute next row  |
+     ^     ^                     |  byte write:       |
+     |     |    async reset      |   hold de_req=1    |
+     |     +---------------------|   until de_ack;    |
+     |          (mid-run)        |   stall = freeze   |
+     |   done                    |   addr/data/nbyte  |
+     |                           +--------------------+
+     |                               | last pixel of
+   +--------+                        | last row
+   | C_DONE |<-----------------------+
+   +--------+
+```
+*Fig. 2 — the compute/write FSM. The async-reset edge back to `C_IDLE` is the one a normal run never takes.*
+
+- Addressing is byte-packed. The framebuffer is 4 pixels per 32-bit word, so a pixel at `(x, y)` maps to word address `y·(W/4) + (x>>2)`, with `x[1:0]` selecting the byte lane. Writes go out with an active-low byte-enable mask (`de_nbyte`) so a single pixel is written without a read-modify-write.
+- Backpressure is respected, not assumed. Every write holds `de_req` high and only advances on `de_ack`; if the arbiter stalls, the FSM freezes the address/data/enable and waits. This is the correctness trap in shared-memory accelerators, and it's handled explicitly in `C_RUN`.
 
 The unit speaks the engine's standard `req/ack/busy/done` handshake, so from the drawing engine's point of view it's just another drawing primitive.
 
@@ -46,17 +83,17 @@ The unit speaks the engine's standard `req/ack/busy/done` handshake, so from the
 
 The standalone Questa testbench is the part I'm proudest of, because the failure modes here are subtle. It hits **100% statement, branch, condition, expression and FSM-state/transition coverage** on the unit. Specifically it:
 
-- **Forces the backpressure path** with a one-shot stall shim that gates `de_ack`, then asserts the unit really did suppress its request and hold the bus stable while stalled (`de_req && !de_ack` is covered, not just assumed reachable).
-- **Forces the C_RUN→C_IDLE transition** by pulsing async reset mid-run — the one FSM edge a normal run never takes.
-- **Sweeps geometry** (widths 1…640, tall frames up to 1023 rows) specifically to flip `de_addr[17]` and exercise every byte-lane/address pattern.
-- **Dumps the framebuffer to a text file** for offline pixel-diffing against a reference.
+- Forces the backpressure path with a one-shot stall shim that gates `de_ack`, then asserts the unit really did suppress its request and hold the bus stable while stalled (`de_req && !de_ack` is covered, not just assumed reachable).
+- Forces the C_RUN→C_IDLE transition by pulsing async reset mid-run, the one FSM edge a normal run never takes.
+- Sweeps geometry (widths 1…640, tall frames up to 1023 rows) specifically to flip `de_addr[17]` and exercise every byte-lane/address pattern.
+- Dumps the framebuffer to a text file for offline pixel-diffing against a reference.
 - Carries SystemVerilog assertions on the handshake (`ack` is a one-cycle pulse, no new `req` while `busy`, `ack` implies a prior `req`).
 
-Toggle coverage sits at 30.4% — and the report says *why* rather than hiding it: the datapath is write-only (so `de_r_data` never toggles by design), config inputs latch once per run, and the colour byte transitions once and holds. Inflating that number would mean adding stimulus with no behavioural meaning, so I didn't.
+Toggle coverage sits at 30.4%, and the report says *why* rather than hiding it: the datapath is write-only (so `de_r_data` never toggles by design), config inputs latch once per run, and the colour byte transitions once and holds. Inflating that number would mean adding stimulus with no behavioural meaning. So I didn't.
 
 ## Real numbers on real silicon
 
-Phase 4 took the whole SoC through Vivado synthesis **and** implementation on the XC7A35T (32,600 LUTs / 65,200 FFs / 75 BRAM). Measured post-implementation:
+Phase 4 took the whole SoC through Vivado synthesis and implementation on the XC7A35T (32,600 LUTs / 65,200 FFs / 75 BRAM). Measured post-implementation:
 
 | | u_automaton (my block) | Whole SoC |
 |---|---|---|
@@ -65,15 +102,28 @@ Phase 4 took the whole SoC through Vivado synthesis **and** implementation on th
 | BRAM (36k eq.) | 0 | 72 / 75 (**96.0%**) |
 | DSP | 1 | 2 (1.67%) |
 
+Plotted as device fill, the shape of the constraint is hard to miss.
+
+```text
+ whole-SoC fill after implementation (XC7A35T)
+
+ LUT  43.81 |##################                      |
+ FF   11.08 |####                                    |
+ BRAM 96.0  |######################################  |
+ DSP   1.67 |#                                       |
+            0         percent of device          100
+```
+*Fig. 3 — whole-SoC device fill (%), post-implementation. The automaton block itself uses zero BRAM; the 96.0% is the framebuffer.*
+
 The honest engineering read, from the report:
 
-- **The accelerator uses zero BRAM** — it's a pure-logic datapath. The device is BRAM-bound at 96%, and that's the *framebuffer*, not the compute. Memory capacity, not logic, is the headroom constraint here.
-- **Vivado inferred a DSP block for the address arithmetic** (`y·(W/4)`). A multiply-by-constant or shift/add would have kept it in LUTs — a real, specific lesson about how innocuous-looking RTL maps to hardware.
-- **Timing risk lives on the memory path**, where the VDU fetch contends with accelerator writes through the arbiter — not in the automaton itself.
+- The accelerator uses zero BRAM: it's a pure-logic datapath. The device is BRAM-bound at 96%, and that's the *framebuffer*, not the compute. Memory capacity, not logic, is the headroom constraint here.
+- Vivado inferred a DSP block for the address arithmetic (`y·(W/4)`). A multiply-by-constant or shift/add would have kept it in LUTs — a real, specific lesson about how innocuous-looking RTL maps to hardware.
+- Timing risk lives on the memory path, where the VDU fetch contends with accelerator writes through the arbiter, not in the automaton itself.
 - And the candid bit: *"Initially while designing I simplified a lot of the structure to make it fit within this ecosystem; in hindsight I feel like I could have done more with this hardware."* The unit is deliberately scoped to one row at a time rather than parallelised across lanes.
 
 ## How it fits together
 
-Four phases: **Phase 1** was a verification warm-up — I bring-up-tested five supplied drawing units against a 502-pixel golden image and correctly flagged four defective and one good (e.g. one unit that silently dropped sloped-line writes). **Phase 2** built and verified the automaton unit. **Phase 3** dropped it into `drawing_engine.sv` in place of a dummy slot and showed Rule 90 fractals on the virtual screen. **Phase 4** integrated, synthesised, implemented and demoed it on the board, driven by a hand-written RISC-V program (`automaton.s`) that MMIO-writes the seed/rule/colour registers, fires `GO`, and polls the `BUSY` status bit to completion.
+Four phases. Phase 1 was a verification warm-up: I bring-up-tested five supplied drawing units against a 502-pixel golden image and correctly flagged four defective and one good (e.g. one unit that silently dropped sloped-line writes). Phase 2 built and verified the automaton unit. Phase 3 dropped it into `drawing_engine.sv` in place of a dummy slot and showed Rule 90 fractals on the virtual screen. Phase 4 integrated, synthesised, implemented and demoed it on the board, driven by a hand-written RISC-V program (`automaton.s`) that MMIO-writes the seed/rule/colour registers, fires `GO`, and polls the `BUSY` status bit to completion.
 
 _Private UoM coursework (COMP32211) — presented as a case study, no public code link._

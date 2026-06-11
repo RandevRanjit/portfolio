@@ -16,33 +16,87 @@ repo: { kind: case-study }
 dates: "2024–25"
 ---
 
-The Manchester **Stump** is a 16-bit, ARM-flavoured load/store RISC machine.
-I built it bottom-up in Verilog — from register-transfer primitives up to a working processor — and then took it through synthesis, place-and-route, and timing closure on a real Spartan-6 FPGA.
-It's the first design I carried all the way through an FPGA back-end flow, and it fits a near-full part with timing met.
+The Manchester Stump is a 16-bit, ARM-flavoured load/store RISC machine.
+I built it bottom-up in Verilog, from register-transfer primitives up to a working processor, then took it through synthesis, place-and-route, and timing closure on a real Spartan-6 FPGA.
+It's the first design I carried all the way through an FPGA back-end flow.
+And it fits a near-full part with timing met.
 
 ## What it actually is
 
 A **multi-cycle** processor, not a pipelined one.
-Every instruction walks a 3-state control FSM in `Stump_FSM.v`: **FETCH → EXECUTE**, then **→ MEMORY only if the instruction is a load or store**, otherwise straight back to FETCH (reset enters FETCH; state enums FETCH=0, EXECUTE=1, MEMORY=2 in `Stump_definitions.v`).
-Multi-cycle is the right call here: it keeps the datapath small enough to fit a tiny part while still supporting variable-length instructions, and it makes the load/store path — which genuinely needs an extra bus cycle — explicit in the control rather than hidden in pipeline hazard logic.
+Every instruction walks a 3-state control FSM in `Stump_FSM.v`: FETCH → EXECUTE, then → MEMORY only if the instruction is a load or store, otherwise straight back to FETCH (reset enters FETCH; state enums FETCH=0, EXECUTE=1, MEMORY=2 in `Stump_definitions.v`).
+The whole control story fits in one diagram.
 
-The ISA is **fixed 16-bit** with the opcode in `ir[15:13]` — eight instruction classes: `ADD, ADC, SUB, SBC, AND, OR, LDST, BCC`.
+```text
+              reset
+                |
+                v
+            +-------+
+      +---->| FETCH |          (state 0)
+      |     +-------+
+      |         |
+      |         v
+      |    +---------+
+      |    | EXECUTE |         (state 1)
+      |    +---------+
+      |      |      |
+      |  all |      | LDST only
+      | else |      v
+      |      |  +--------+
+      |      |  | MEMORY |     (state 2)
+      |      |  +--------+
+      |      |      |
+      +------+------+
+```
+*Fig. 1 — the 3-state control FSM in `Stump_FSM.v`; only loads and stores take the MEMORY detour.*
+
+Multi-cycle is the right call here.
+It keeps the datapath small enough to fit a tiny part while still supporting variable-length instructions, and it makes the load/store path (which genuinely needs an extra bus cycle) explicit in the control rather than hidden in pipeline hazard logic.
+
+The ISA is fixed 16-bit with the opcode in `ir[15:13]`: eight instruction classes, `ADD, ADC, SUB, SBC, AND, OR, LDST, BCC`.
 Three instruction formats: Type 1 (register–register, with an optional shift on operand A), Type 2 (register–immediate), and Type 3 (`LDST` plus `BCC` branches).
-`BCC` is **branch-on-condition-codes**, not an unconditional jump: it tests the four-flag condition register (N, Z, V, C, set during arithmetic/logic) against the condition field and resolves the target as **PC + offset**, PC-relative.
+`BCC` is branch-on-condition-codes, not an unconditional jump.
+It tests the four-flag condition register (N, Z, V, C, set during arithmetic/logic) against the condition field and resolves the target as PC + offset, PC-relative.
 
 ## The design decisions that matter
 
-**Register file: 8 registers, but two are special.** R0 is **hardwired to zero** and R7 **is the program counter**. That's not an accident — a hard zero register lets you synthesise `MOV` and `CMP` for free (they're just adds/subtracts against R0), and putting the PC inside the register file means branches are ordinary ALU adds (`PC ← PC + offset`) instead of a bolted-on adder. I built the file from `Stump_reg16bit` / `Stump_reg4bit` primitives wired through `Stump_mux16bit` selectors.
+**Register file: 8 registers, but two are special.** R0 is hardwired to zero and R7 is the program counter. That's not an accident. A hard zero register lets you synthesise `MOV` and `CMP` for free (they're just adds/subtracts against R0), and putting the PC inside the register file means branches are ordinary ALU adds (`PC ← PC + offset`) instead of a bolted-on adder. I built the file from `Stump_reg16bit` / `Stump_reg4bit` primitives wired through `Stump_mux16bit` selectors.
 
-**Shifts live on operand A, in the same cycle as the ALU op.** `Stump_shifter` sits in front of the ALU and applies the 2-bit `shift_op` to source A before it reaches the arithmetic unit — so a shifted add is one instruction, one EXECUTE cycle. Right shifts get a dedicated path because (unlike left shifts) you can't fake them with an addition.
+**Shifts live on operand A, in the same cycle as the ALU op.** `Stump_shifter` sits in front of the ALU and applies the 2-bit `shift_op` to source A before it reaches the arithmetic unit, so a shifted add is one instruction, one EXECUTE cycle. Right shifts get a dedicated path because (unlike left shifts) you can't fake them with an addition.
 
-**Sign extension is its own decoded path.** `Stump_sign_extender`, driven by `ext_op`, widens the immediate field correctly for the Type-2 and branch-offset cases — getting sign behaviour right is exactly the kind of thing that's invisible until a negative branch offset sends you to the wrong address.
+**Sign extension is its own decoded path.** `Stump_sign_extender`, driven by `ext_op`, widens the immediate field correctly for the Type-2 and branch-offset cases. Getting sign behaviour right is exactly the kind of thing that's invisible until a negative branch offset sends you to the wrong address.
 
-I authored the ALU (8 functions, selected by `alu_func[2:0]`), the control-decode block, the datapath wiring (`opB_mux_sel`, `cc_en`, `reg_write` control lines), and the full LDST and BCC instruction paths. The commit history shows the real build order — basic ALU first, then LDST and BCC layered on — so the student-authored core is provable, not asserted. The top-level `Stump.v` skeleton, the 1,545-line `Stump_Memory.v`, and the `Stump_Board.v` wrapper were provided infrastructure. There's also a **MU0** accumulator machine in the tree — the simpler Year-1 design, reused here as a warm-up before the full Stump.
+Put together, one EXECUTE cycle moves data like this.
+
+```text
+        +------------------------------+
+        | register file (8 x 16-bit)   |
+        |    R0 = 0       R7 = PC      |
+        +------------------------------+
+             | src A             | src B
+             v                   v
+     +---------------+     +-----------+
+     | Stump_shifter |     |  opB mux  |<-- sign-extended
+     |  (shift_op)   |     +-----------+    immediate
+     +---------------+           |          (ext_op)
+             |                   |
+             +--------+----------+
+                      v
+               +-------------+
+               |     ALU     |---> N Z V C   (cc_en)
+               |alu_func[2:0]|
+               +-------------+
+                      |
+                      v
+            write-back (reg_write)
+```
+*Fig. 2 — the EXECUTE-cycle datapath: shift on operand A, sign-extended immediates into operand B, flags out of the ALU.*
+
+I authored the ALU (8 functions, selected by `alu_func[2:0]`), the control-decode block, the datapath wiring (`opB_mux_sel`, `cc_en`, `reg_write` control lines), and the full LDST and BCC instruction paths. The commit history shows the real build order — basic ALU first, then LDST and BCC layered on — so the student-authored core is provable, not asserted. The top-level `Stump.v` skeleton, the 1,545-line `Stump_Memory.v`, and the `Stump_Board.v` wrapper were provided infrastructure. There's also a MU0 accumulator machine in the tree: the simpler Year-1 design, reused here as a warm-up before the full Stump.
 
 ## Closed on real silicon
 
-Synthesised, mapped, placed-and-routed in **Xilinx ISE (2024-11-27)** for a **Spartan-6 xc6slx4, package cpg196, speed grade −2** — a deliberately small part.
+Synthesised, mapped, placed-and-routed in Xilinx ISE (2024-11-27) for a Spartan-6 xc6slx4, package cpg196, speed grade −2. A deliberately small part.
 
 | Resource | Used | Available | % |
 |---|---|---|---|
@@ -52,15 +106,31 @@ Synthesised, mapped, placed-and-routed in **Xilinx ISE (2024-11-27)** for a **Sp
 | Fully-used LUT-FF pairs | 958 | 2,123 | 45% |
 | Bonded IOBs | 63 | 106 | 59% |
 
-Timing score **0** (setup 0, hold 0), with **all signals completely routed** — the design fits and meets timing on a near-full device. Numbers are from the real `Stump_Board.mrp` map report and `Stump_Board.par` place-and-route report.
+Timing score **0** (setup 0, hold 0), with all signals completely routed. The design fits and meets timing on a near-full device. Numbers are from the real `Stump_Board.mrp` map report and `Stump_Board.par` place-and-route report.
 
-**Honest caveat on speed:** there's no fmax to quote. The design carries no user-defined timing constraint, so ISE reports a timing *score* of 0 (constraints met) rather than a maximum clock frequency. The binding constraint here was physical resources — 98% slice occupancy — not the clock. I'd rather state that plainly than invent a megahertz number.
+One honest caveat on speed: there's no fmax to quote. The design carries no user-defined timing constraint, so ISE reports a timing *score* of 0 (constraints met) rather than a maximum clock frequency. The binding constraint here was physical resources — 98% slice occupancy — not the clock. I'd rather state that plainly than invent a megahertz number.
 
 ## Proving it runs
 
-To show the CPU works end-to-end rather than just simulates, I wrote programs in Stump assembly — including **Battleship** driving a **memory-mapped 8×8 LED matrix** (base `0xFF00`, 64 LEDs). The init loop writes colours via the `st rN, [r1]` store-and-pointer-increment pattern (`ocean_blue = 0x03`), which exercises the LDST path, the MMIO address decode, and assembly fluency on a processor I'd built myself.
+To show the CPU works end-to-end rather than just simulates, I wrote programs in Stump assembly, including Battleship driving a memory-mapped 8×8 LED matrix (base `0xFF00`, 64 LEDs). The init loop writes colours via the `st rN, [r1]` store-and-pointer-increment pattern (`ocean_blue = 0x03`), which exercises the LDST path and the MMIO address decode, and shows assembly fluency on a processor I'd built myself.
 
-Verification is testbench-driven the classic Verilog way: `Stump_Testbench.v` and `Stump_ALU_Testbench.v` use `$display`-and-compare self-checking. This is Verilog-2001, so there are no SystemVerilog assertions and no coverage instrumentation — the limitation is real and I'll own it. The correctness argument rests on directed testbenches plus a design that mapped and routed cleanly on hardware, not on formal proof.
+```text
+ 0x0000 +----------------------+
+        |  code + data         |
+        |  (Stump_Memory.v)    |
+        ~                      ~
+        |                      |
+ 0xFF00 +----------------------+
+        |  8 x 8 LED matrix    |
+        |  64 memory-mapped    |
+        |  words; Battleship   |
+        |  init loop writes    |
+        |  st rN, [r1], r1++   |
+        +----------------------+
+```
+*Fig. 3 — memory map for the Battleship demo: 64 LED words at `0xFF00`, lit by a store-and-increment loop.*
+
+Verification is testbench-driven the classic Verilog way: `Stump_Testbench.v` and `Stump_ALU_Testbench.v` use `$display`-and-compare self-checking. This is Verilog-2001, so there are no SystemVerilog assertions and no coverage instrumentation. That limitation is real and I'll own it. The correctness argument rests on directed testbenches plus a design that mapped and routed cleanly on hardware, not on formal proof.
 
 ## Honest scope
 

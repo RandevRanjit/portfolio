@@ -18,10 +18,14 @@ repo: { kind: public, url: "https://github.com/RandevRanjit/FSAI-Simulation-C" }
 dates: "2025"
 ---
 
-A driverless-racing simulator in C++ for a Formula Student AI team — the rig you test an
+A driverless-racing simulator in C++ for a Formula Student AI team: the rig you test an
 autonomous-vehicle stack against before it touches a real car.
-I architected and authored the entire simulation engine: the velox physics library (vehicle dynamics, RK4 integrator, all three runtime-switchable CommonRoad models), the sim loop, the IO layer (stereo camera, CAN and UDP transport), the common timing and clock infrastructure, and the software-CAN stack — roughly **29k of the 34k lines**.
-This is an 11-person team project; the ONNX/SIFT/Kalman perception pipeline was a teammate's contribution, plugging into the camera and vehicle-pose feeds I built.
+I architected and authored the entire simulation engine — the velox physics library (vehicle
+dynamics, RK4 integrator, all three runtime-switchable CommonRoad models), the sim loop, the
+IO layer (stereo camera, CAN and UDP transport), the common timing and clock infrastructure,
+and the software-CAN stack. Roughly **29k of the 34k lines**.
+This is an 11-person team project; the ONNX/SIFT/Kalman perception pipeline was a teammate's
+contribution, plugging into the camera and vehicle-pose feeds I built.
 
 ## Vehicle dynamics: RK4 over three real models
 
@@ -32,11 +36,11 @@ dimension, and applies the weighted update.
 It drives three runtime-switchable models, each a distinct CommonRoad-style formulation with a
 different state dimension:
 
-- **ST** — single-track (bicycle), **7-state**.
-- **STD** — single-track with drift dynamics, **9-state**.
-- **MB** — full multi-body with suspension and load transfer, **29-state**.
+- **ST** — single-track (bicycle), 7-state.
+- **STD** — single-track with drift dynamics, 9-state.
+- **MB** — full multi-body with suspension and load transfer, 29-state.
 
-Which one runs is a YAML field (`configs/vehicle/ads-dv.yaml: model: std`) — no recompile.
+Which one runs is a YAML field (`configs/vehicle/ads-dv.yaml: model: std`). No recompile.
 The simulator carries them behind one `ModelInterface` (init / dynamics / speed function
 pointers), so the same RK4 loop, the same safety latch, and the same timing code work
 unchanged whether you are integrating 7 states or 29.
@@ -46,8 +50,24 @@ model across a 50ms hitch in one RK4 step and it goes unstable.
 `ModelTiming::plan_steps` splits the requested `dt` into
 `ceil(dt / max_dt)` equal sub-steps, then refuses to go below a 1ms stability floor
 (`kMinStableDt`), clamping rather than producing a sub-step too small to be meaningful.
-The RK4 step then runs once per sub-step. That is the correct, boring answer to frame-time
-jitter — and it is the reason the sim stays stable when the render thread stalls.
+The RK4 step then runs once per sub-step.
+
+```text
+a frame hitch hands the integrator dt = 50ms
+
+naive: one RK4 step across the whole hitch
+  [................... 50ms ...................]
+  stiff 29-state MB model -> unstable
+
+plan_steps: n = ceil(dt / max_dt), floored at 1ms
+  [....][....][....][....][....][....][....][....]
+  one RK4 step per sub-step, never below kMinStableDt
+```
+
+*Fig. 1 — plan_steps splits a frame hitch into equal RK4 sub-steps with a 1ms floor.*
+
+That is the correct, boring answer to frame-time jitter, and it is why the sim stays stable
+when the render thread stalls.
 
 A safety layer rides on top of the integrator: a low-speed-safety latch that zeroes
 longitudinal drift through standstill (so the car doesn't creep from numerical noise) and a
@@ -58,16 +78,34 @@ loss-of-control detector, both config-driven per model.
 Rather than handing the perception stack the cone positions, the sim *renders* what a stereo
 camera would see and makes perception earn them.
 I built the camera in `io/camera/sim_stereo`: an OpenGL framebuffer renders the cone field for
-the left and right eyes, then a **pixel-buffer-object readback** (`glReadPixels` into a
+the left and right eyes, then a pixel-buffer-object readback (`glReadPixels` into a
 `GL_PIXEL_PACK_BUFFER`, then `glMapBufferRange`) pulls the frames back off the GPU.
-Frames land in a ring buffer that a dedicated vision thread drains non-blocking — so GPU→CPU
-transfer and frame production are decoupled from the consumer, and a slow detection frame
-never stalls the render loop.
+Frames land in a ring buffer that a dedicated vision thread drains non-blocking, so GPU→CPU
+transfer and frame production are decoupled from the consumer. A slow detection frame never
+stalls the render loop.
 
-The perception pipeline that consumes those frames (a teammate's work) is a real one — ONNX
+```text
+render thread (mine)            vision thread (teammate)
++-------------------+           +----------------------+
+| OpenGL FBO        |           | ONNX YOLO + NMS      |
+| left / right eyes |           | SIFT stereo match    |
++---------+---------+           | Kalman + landmark map|
+          |                     +-----------^----------+
+   glReadPixels into                        |
+   GL_PIXEL_PACK_BUFFER                     |  non-blocking
+   glMapBufferRange                         |  drain
+          v                                 |
++-------------------+                       |
+|    ring buffer    +-----------------------+
++-------------------+
+```
+
+*Fig. 2 — frame path: FBO render, PBO readback, ring buffer, vision thread.*
+
+The perception pipeline that consumes those frames (a teammate's work) is a real one: ONNX
 YOLO cone detector with NMS and a per-track ID assigner, per-cone SIFT stereo matching under an
 epipolar constraint, triangulation, a constant-velocity Kalman filter, and a recursive-Bayesian
-landmark map — which is exactly the point: the camera I wrote has to be good enough that a
+landmark map. Which is exactly the point. The camera I wrote has to be good enough that a
 genuine detector locks onto it.
 
 ## A software CAN bus to a separate VCU process
@@ -75,11 +113,29 @@ genuine detector locks onto it.
 The control side talks to the vehicle-control unit the way the real car does — over CAN.
 I wrote the AI-to-VCU adapter (`control/runtime_cpp`) that packs planner outputs into
 `can_frame` structures (SocketCAN ABI) and unpacks VCU feedback, plus a UDP link
-(`sim/svcu`) that carries those packed frames between the simulator and a **separate S-VCU stub
-process**.
-So the integration test isn't a function call across a module boundary — it's two processes
+(`sim/svcu`) that carries those packed frames between the simulator and a separate S-VCU stub
+process.
+So the integration test isn't a function call across a module boundary. It's two processes
 exchanging CAN frames over a socket, with acknowledgement-timeout tracking and staleness
 colouring in the GUI. That is the shape of the real bring-up problem.
+
+```text
+ simulator process              S-VCU stub process
++---------------------+        +-----------------+
+| AI-to-VCU adapter   |        |                 |
+| control/runtime_cpp |        | receives frames |
+| packs planner cmds  |        | replies with    |
+| into can_frame      |        | VCU feedback    |
+| (SocketCAN ABI)     |        |                 |
++----------+----------+        +--------+--------+
+           |    UDP link (sim/svcu)     |
+           |----- CAN frames ---------->|
+           |<---- feedback frames ------|
+
+   ack-timeout tracking + staleness colouring in the GUI
+```
+
+*Fig. 3 — two processes exchanging packed CAN frames over the UDP S-VCU link.*
 
 ## Real-time budget timing with a swappable clock
 
@@ -87,14 +143,14 @@ Every subsystem runs against an explicit nanosecond budget.
 The timing infra (`common/time/budget.*`) is a C-ABI core with an RAII `ScopedBudgetTimer`
 (and typed `VisionStageTimer` / `ControlStageTimer` / etc.) designed to record last / worst / mean
 duration per subsystem and report against a configured budget.
-`fsai_run` configures four budgets at startup — Simulation Renderer, Planner + Controller,
-Vision Pipeline, CAN Dispatch — and stage timers wrap the hot paths; however
-`fsai_budget_stage_record` and `fsai_budget_report_all` are currently stubs, so the scaffold
-is wired up but data is not yet recorded or surfaced.
-Behind it sits a clock (`fsai_clock`) that runs in **realtime or simulated mode**: in simulated
+`fsai_run` configures four budgets at startup (Simulation Renderer, Planner + Controller,
+Vision Pipeline, CAN Dispatch) and stage timers wrap the hot paths. But
+`fsai_budget_stage_record` and `fsai_budget_report_all` are currently stubs: the scaffold is
+wired up, the data is not yet recorded or surfaced.
+Behind it sits a clock (`fsai_clock`) that runs in realtime or simulated mode. In simulated
 mode time is advanced explicitly, which is what makes deterministic replay possible.
-(The timers *measure and report* against budget; they don't pre-empt a stage that overruns —
-they tell you which one did.)
+(The timers *measure and report* against budget; they don't pre-empt a stage that overruns.
+They tell you which one did.)
 
 ## Honest scope
 
