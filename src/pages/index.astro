@@ -21,7 +21,7 @@ const work = (await getCollection('projects')).sort((a, b) => a.data.order - b.d
   <section class="reveal" style="padding-block:2rem 3rem;">
     <p class="section-num wrap">02 / ALL WORK</p>
     <div class="marquee">
-      <div class="marquee__track" style={`--marquee-dur:${work.length * 10}s`}>
+      <div class="marquee__track">
         {[false, true].map((dupe) => (
           <ul class="marquee__group" aria-label={dupe ? undefined : 'All projects'}
             aria-hidden={dupe ? 'true' : undefined} inert={dupe}>
@@ -40,44 +40,76 @@ const work = (await getCollection('projects')).sort((a, b) => a.data.order - b.d
   </section>
 </BaseLayout>
 <script>
-  // keep the keyboard-focused card fully in view inside the flattened marquee
-  // (browsers don't reliably auto-scroll partially-visible focus targets)
-  document.querySelectorAll('.marquee').forEach((m) => {
+  // Marquee runtime — rAF-driven scrollLeft with a seamless wrap at one group
+  // width. A real scroll container tiles like normal content in every engine;
+  // the previous CSS transform animated a ~10k-px composited layer, which
+  // WebKit only partially rasterises (cards "run out" mid-loop, then blank).
+  const SPEED = 36; // px/s — same pace as the shipped 150s / 15-card loop
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const noHover = matchMedia('(hover: none)');
+
+  document.querySelectorAll<HTMLElement>('.marquee').forEach((m) => {
+    const group = m.querySelector<HTMLElement>('.marquee__group:not([aria-hidden])');
+    if (!group) return;
+
+    let raf = 0, last = 0, pos = 0;
+    let hovered = false, focused = false, inView = false;
+    const allowed = () => !reduced.matches && !noHover.matches;
+
+    function step(now: number) {
+      raf = 0;
+      if (hovered || focused || !inView || !allowed()) return;
+      const dt = Math.min(now - last, 100); // clamp background-tab jumps
+      last = now;
+      // resync if the user (or focus scroll-into-view) moved the scroller
+      if (Math.abs(m.scrollLeft - pos) > 1) pos = m.scrollLeft;
+      pos += SPEED * dt / 1000;
+      const wrap = group!.getBoundingClientRect().width;
+      if (pos >= wrap) pos -= wrap;
+      m.scrollLeft = pos;
+      raf = requestAnimationFrame(step);
+    }
+    function schedule() {
+      if (raf || hovered || focused || !inView || !allowed()) return;
+      last = performance.now();
+      raf = requestAnimationFrame(step);
+    }
+
+    m.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovered = true; });
+    m.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hovered = false; schedule(); } });
     m.addEventListener('focusin', (e) => {
+      focused = true;
+      // keep the focused card fully in view (native scroll handles most of it)
       const item = (e.target as HTMLElement).closest('.marquee__item');
       if (item) item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     });
+    m.addEventListener('focusout', () => { focused = false; schedule(); });
+
+    new IntersectionObserver((entries) => {
+      entries.forEach((en) => { inView = en.isIntersecting; schedule(); });
+    }, { threshold: 0.05 }).observe(m);
+
+    reduced.addEventListener('change', schedule);
+    noHover.addEventListener('change', schedule);
   });
 </script>
 <style>
-  /* full-bleed auto-scrolling marquee: track = two identical groups, slid by
-     exactly one group width per loop so the wrap is seamless; hover pauses.
-     Duration scales with card count (--marquee-dur) → constant px/s speed. */
-  .marquee { overflow: hidden; }
-  .marquee__track { display: flex; width: max-content; animation: marquee-slide var(--marquee-dur, 40s) linear infinite; }
-  .marquee:hover .marquee__track,
-  .marquee:active .marquee__track { animation-play-state: paused; }
-  /* keyboard: a transformed track inside overflow:hidden hides focused cards
-     (transforms aren't scroll containers — no scroll-into-view, invisible focus
-     ring). Entering by Tab flattens it into a static scroller so the browser
-     can scroll each focused card into view. */
-  .marquee:focus-within { overflow-x: auto; }
-  .marquee:focus-within .marquee__track { animation: none; }
+  /* full-bleed auto-scrolling marquee — a real scroll container advanced by
+     the rAF runtime above (no transform animation: WebKit blanks oversized
+     composited layers). Two identical groups; the runtime wraps scrollLeft
+     by one group width for a seamless loop. Hover/focus pause in JS. */
+  .marquee { overflow-x: auto; scrollbar-width: none; }
+  .marquee::-webkit-scrollbar { display: none; }
+  .marquee__track { display: flex; width: max-content; }
   .marquee__group {
     display: flex; align-items: stretch; gap: 1.25rem;
     list-style: none; margin: 0; padding: .5rem 1.25rem .75rem 0;
   }
   .marquee__item { flex: 0 0 clamp(17rem, 26vw, 21rem); display: flex; }
-  @keyframes marquee-slide { to { transform: translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce) {
-    /* global.css kills the animation; fall back to manual scroll, no dupes */
-    .marquee { overflow-x: auto; }
-    .marquee__group[aria-hidden='true'] { display: none; }
-  }
-  @media (hover: none) {
-    /* touch-primary: auto-motion is untappable (WCAG 2.2.2) — swipe instead */
-    .marquee { overflow-x: auto; }
-    .marquee__track { animation: none; }
+  /* no auto-scroll on touch (WCAG 2.2.2) or reduced-motion — the runtime
+     checks the same queries; it's a plain swipeable row, so no loop copy */
+  @media (prefers-reduced-motion: reduce), (hover: none) {
     .marquee__group[aria-hidden='true'] { display: none; }
   }
 </style>
