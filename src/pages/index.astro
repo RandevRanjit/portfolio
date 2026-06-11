@@ -7,8 +7,7 @@ import TermRule from '../components/TermRule.astro';
 import { withBase } from '../lib/url';
 import { getCollection } from 'astro:content';
 
-const all = await getCollection('projects');
-const featured = all.sort((a, b) => a.data.order - b.data.order).slice(0, 4);
+const work = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 ---
 <BaseLayout title="Portfolio" current={undefined}>
   <Hero />
@@ -19,21 +18,66 @@ const featured = all.sort((a, b) => a.data.order - b.data.order).slice(0, 4);
   </section>
   <TermRule />
 
-  <section class="wrap reveal" style="padding-block:2rem 3rem;">
-    <p class="section-num">02 / SELECTED WORK</p>
-    <div class="grid">
-      {featured.map((p, i) => (
-        <div class="reveal" style={`transition-delay:${i * 80}ms`}>
-          <ProjectCard num={String(p.data.order).padStart(2, '0')} slug={p.id}
-            title={p.data.title} tagline={p.data.tagline} stack={p.data.stack}
-            repoKind={p.data.repo.kind} />
-        </div>
-      ))}
+  <section class="reveal" style="padding-block:2rem 3rem;">
+    <p class="section-num wrap">02 / ALL WORK</p>
+    <div class="marquee">
+      <div class="marquee__track" style={`--marquee-dur:${work.length * 10}s`}>
+        {[false, true].map((dupe) => (
+          <ul class="marquee__group" aria-label={dupe ? undefined : 'All projects'}
+            aria-hidden={dupe ? 'true' : undefined} inert={dupe}>
+            {work.map((p) => (
+              <li class="marquee__item">
+                <ProjectCard num={String(p.data.order).padStart(2, '0')} slug={p.id}
+                  title={p.data.title} tagline={p.data.tagline} stack={p.data.stack}
+                  repoKind={p.data.repo.kind} />
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
     </div>
-    <p style="margin-top:1.5rem;"><a href={withBase('quant')}>See all work by field →</a></p>
+    <p class="wrap" style="margin-top:1.5rem;"><a href={withBase('quant')}>See all work by field →</a></p>
   </section>
 </BaseLayout>
+<script>
+  // keep the keyboard-focused card fully in view inside the flattened marquee
+  // (browsers don't reliably auto-scroll partially-visible focus targets)
+  document.querySelectorAll('.marquee').forEach((m) => {
+    m.addEventListener('focusin', (e) => {
+      const item = (e.target as HTMLElement).closest('.marquee__item');
+      if (item) item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
+  });
+</script>
 <style>
-  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(18rem,1fr)); gap:1.25rem; }
-  .grid > .reveal { height:100%; }
+  /* full-bleed auto-scrolling marquee: track = two identical groups, slid by
+     exactly one group width per loop so the wrap is seamless; hover pauses.
+     Duration scales with card count (--marquee-dur) → constant px/s speed. */
+  .marquee { overflow: hidden; }
+  .marquee__track { display: flex; width: max-content; animation: marquee-slide var(--marquee-dur, 40s) linear infinite; }
+  .marquee:hover .marquee__track,
+  .marquee:active .marquee__track { animation-play-state: paused; }
+  /* keyboard: a transformed track inside overflow:hidden hides focused cards
+     (transforms aren't scroll containers — no scroll-into-view, invisible focus
+     ring). Entering by Tab flattens it into a static scroller so the browser
+     can scroll each focused card into view. */
+  .marquee:focus-within { overflow-x: auto; }
+  .marquee:focus-within .marquee__track { animation: none; }
+  .marquee__group {
+    display: flex; align-items: stretch; gap: 1.25rem;
+    list-style: none; margin: 0; padding: .5rem 1.25rem .75rem 0;
+  }
+  .marquee__item { flex: 0 0 clamp(17rem, 26vw, 21rem); display: flex; }
+  @keyframes marquee-slide { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) {
+    /* global.css kills the animation; fall back to manual scroll, no dupes */
+    .marquee { overflow-x: auto; }
+    .marquee__group[aria-hidden='true'] { display: none; }
+  }
+  @media (hover: none) {
+    /* touch-primary: auto-motion is untappable (WCAG 2.2.2) — swipe instead */
+    .marquee { overflow-x: auto; }
+    .marquee__track { animation: none; }
+    .marquee__group[aria-hidden='true'] { display: none; }
+  }
 </style>

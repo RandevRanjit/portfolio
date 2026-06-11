@@ -31,10 +31,6 @@ const subs: Record<string, string> = {
         </li>
       ))}
     </ul>
-    <div class="fp__scan" aria-hidden="true">
-      <span class="fp__scanwrap">[<span class="fp__fillbar"></span><span class="fp__hole"></span>]</span>
-      <span class="fp__scanlabel">scan</span>
-    </div>
   </div>
 
   <div class="fp__rule" aria-hidden="true"><span class="fp__cap">+</span><span class="fp__fill">================================================================================================================================</span><span class="fp__cap">+</span></div>
@@ -51,8 +47,8 @@ const subs: Record<string, string> = {
   .fp__cap { flex: 0 0 auto; }
   .fp__fill { flex: 1 1 auto; overflow: hidden; }
 
-  /* body framed by | sides */
-  .fp__body { border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); }
+  /* body framed by | sides; solid faceplate against the page's voxel backdrop */
+  .fp__body { background: var(--paper); border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); }
 
   .fp__cells {
     list-style: none; margin: 0; padding: 0;
@@ -89,29 +85,6 @@ const subs: Record<string, string> = {
   .fp__cell:hover .fp__num,  .fp__cell:focus-visible .fp__num,
   .fp__cell:hover .fp__sub,  .fp__cell:focus-visible .fp__sub { color: var(--paper); }
 
-  /* scan bar */
-  .fp__scan {
-    display: flex; align-items: center; gap: .6rem;
-    border-top: 1px solid var(--line); padding: .55rem 1.1rem;
-    font-family: var(--font-display); font-size: .9rem;
-  }
-  .fp__scanwrap { display: inline-flex; align-items: center; }
-  .fp__fillbar {
-    display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom;
-    color: var(--accent-quant); width: 0; animation: fp-fill 2.6s linear infinite;
-  }
-  .fp__fillbar::after { content: '||||||||||||||||||||'; }
-  .fp__hole {
-    display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom;
-    color: var(--grey); width: 20ch; animation: fp-hole 2.6s linear infinite;
-  }
-  .fp__hole::after { content: '....................'; }
-  .fp__scanlabel { color: var(--grey); font-family: var(--font-mono); font-size: .72rem;
-                   text-transform: uppercase; letter-spacing: .08em; }
-
-  @keyframes fp-fill { 0% { width: 0ch; } 82% { width: 20ch; } 100% { width: 20ch; } }
-  @keyframes fp-hole { 0% { width: 20ch; } 82% { width: 0ch; } 100% { width: 0ch; } }
-
   /* responsive: wrap the 5 cells, keep the device frame */
   @media (max-width: 760px) {
     .fp__cells { grid-template-columns: repeat(2, 1fr); }
@@ -123,9 +96,5 @@ const subs: Record<string, string> = {
     .fp__cells { grid-template-columns: 1fr; }
     .fp__cell, .fp__li:nth-child(odd) .fp__cell { border-left: 0; border-top: 1px solid var(--line); }
     .fp__li:first-child .fp__cell { border-top: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .fp__fillbar { animation: none; width: 20ch; }
-    .fp__hole { animation: none; width: 0ch; }
   }
 </style>

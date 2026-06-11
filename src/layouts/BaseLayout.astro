@@ -6,6 +6,7 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import TermRule from '../components/TermRule.astro';
+import VoxelField from '../components/VoxelField.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 const { title, description, section, current } = Astro.props as
@@ -26,6 +27,7 @@ const { title, description, section, current } = Astro.props as
     </script>
   </head>
   <body>
+    <VoxelField fixed />
     <Nav current={current} />
     <TermRule />
     <main><slot /></main>
