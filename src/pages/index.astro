@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import FieldsPanel from '../components/FieldsPanel.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import TermRule from '../components/TermRule.astro';
 import { withBase } from '../lib/url';
 import { getCollection } from 'astro:content';
 
@@ -16,7 +15,6 @@ const work = (await getCollection('projects')).sort((a, b) => a.data.order - b.d
     <p class="section-num">01 / FIELDS</p>
     <FieldsPanel />
   </section>
-  <TermRule />
 
   <section class="reveal" style="padding-block:2rem 3rem;">
     <p class="section-num wrap">02 / ALL WORK</p>

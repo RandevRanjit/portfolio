@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SkillsMatrix from '../components/SkillsMatrix.astro';
-import TermRule from '../components/TermRule.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 const timeline = [
@@ -19,11 +18,8 @@ const timeline = [
 
     <p class="section-num" style="margin-top:2rem;">TIMELINE</p>
     <dl class="tl">
-      {timeline.map((t, i) => (
-        <>
-          {i > 0 && <TermRule variant="light" />}
-          <div class="tl__row"><dt class="label">{t.when}</dt><dd>{t.what}</dd></div>
-        </>
+      {timeline.map((t) => (
+        <div class="tl__row"><dt class="label">{t.when}</dt><dd>{t.what}</dd></div>
       ))}
     </dl>
 

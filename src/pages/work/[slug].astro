@@ -2,7 +2,6 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MetricBlock from '../../components/MetricBlock.astro';
 import AsciiAnim from '../../components/AsciiAnim.astro';
-import TermRule from '../../components/TermRule.astro';
 import { getCollection, render } from 'astro:content';
 import { withBase } from '../../lib/url';
 
@@ -27,8 +26,7 @@ const lineage = d.lineage ?? [];
       <figure><img src={im.src} alt={im.alt} loading="lazy" />{im.caption && <figcaption class="label">{im.caption}</figcaption>}</figure>
     ))}
     <div class="prose"><Content /></div>
-    <div style="margin-top:2rem;"><TermRule /></div>
-    <p class="label">ROLE</p><p>{d.role}</p>
+    <p class="label" style="margin-top:2.5rem;">ROLE</p><p>{d.role}</p>
     <p class="label">DATES / {d.dates}</p>
     {d.repo.kind === 'public' && d.repo.url && <p><a href={d.repo.url}>View source on GitHub →</a></p>}
     {d.repo.kind !== 'public' && <p class="label">{d.repo.kind === 'private' ? 'Private repository' : 'Case study — private UoM coursework, no code link'}</p>}

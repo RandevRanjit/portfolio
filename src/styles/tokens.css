@@ -16,9 +16,10 @@
   --accent-music:      #7a1f5a;
   --accent-other:      #7a4200;
 
-  --font-display: 'Departure Mono', ui-monospace, monospace;
+  /* one typeface everywhere — display / labels / body all IBM Plex Mono */
+  --font-display: 'IBM Plex Mono', ui-monospace, monospace;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --font-body: 'Inter Variable', system-ui, sans-serif;
+  --font-body: 'IBM Plex Mono', ui-monospace, monospace;
 
   --fs-mega: clamp(3rem, 9vw, 7rem);
   --fs-h1: clamp(2rem, 5vw, 3.5rem);

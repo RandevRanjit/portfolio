@@ -1,6 +1,5 @@
 ---
 // src/components/SkillsMatrix.astro
-import TermRule from './TermRule.astro';
 const groups = [
   { k: 'HDL & EDA', v: 'SystemVerilog, Verilog, Vivado (Artix-7/Spartan-7), Xilinx ISE (Spartan-6), ModelSim/Questa, register-mapped peripherals' },
   { k: 'Languages', v: 'Rust, C++17/20, C, Python, RISC-V & ARM assembly' },
@@ -8,15 +7,11 @@ const groups = [
   { k: 'Concurrency & Systems', v: 'pthreads, std::thread, OpenMP, atomics, spinlocks, NUMA affinity, tokio async' },
 ];
 ---
-<TermRule />
 <dl class="skills">
-  {groups.map((g, i) => (
-    <>
-      {i > 0 && <TermRule variant="light" />}
-      <div class="skills__row">
-        <dt class="label">{g.k}</dt><dd>{g.v}</dd>
-      </div>
-    </>
+  {groups.map((g) => (
+    <div class="skills__row">
+      <dt class="label">{g.k}</dt><dd>{g.v}</dd>
+    </div>
   ))}
 </dl>
 <style>

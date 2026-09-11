@@ -15,8 +15,8 @@ body {
   margin: 0; background: var(--paper); color: var(--ink);
   font-family: var(--font-body); font-size: var(--fs-body); line-height: 1.5;
 }
-/* Departure Mono is a pixel font — no negative tracking, tighter line-height */
-h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; letter-spacing: 0; margin: 0; }
+/* headings: the same mono family as everything else, set heavier and tighter */
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
 a { color: var(--ink); text-underline-offset: 3px; text-decoration-thickness: 2px; }
 a:hover { color: var(--accent); }
 .label { font-family: var(--font-mono); font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.08em; color: var(--grey); }

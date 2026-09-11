@@ -16,8 +16,6 @@ const subs: Record<string, string> = {
 };
 ---
 <nav class="fp" aria-label="Fields">
-  <div class="fp__rule" aria-hidden="true"><span class="fp__cap">+=[ FIELDS ]=</span><span class="fp__fill">================================================================================================================================</span><span class="fp__cap">+</span></div>
-
   <div class="fp__body">
     <ul class="fp__cells">
       {sectionNav.map((s, i) => (
@@ -32,23 +30,13 @@ const subs: Record<string, string> = {
       ))}
     </ul>
   </div>
-
-  <div class="fp__rule" aria-hidden="true"><span class="fp__cap">+</span><span class="fp__fill">================================================================================================================================</span><span class="fp__cap">+</span></div>
 </nav>
 
 <style>
   .fp { font-family: var(--font-display); color: var(--ink); margin: 1rem 0 0; }
 
-  /* ASCII top/bottom borders — caps pinned, fill clips to any width */
-  .fp__rule {
-    display: flex; align-items: center; font-size: 0.9rem; line-height: 1;
-    white-space: nowrap; overflow: hidden; user-select: none;
-  }
-  .fp__cap { flex: 0 0 auto; }
-  .fp__fill { flex: 1 1 auto; overflow: hidden; }
-
-  /* body framed by | sides; solid faceplate against the page's voxel backdrop */
-  .fp__body { background: var(--paper); border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); }
+  /* solid faceplate against the page's voxel backdrop, framed like the cards */
+  .fp__body { background: var(--paper); border: 2px solid var(--ink); }
 
   .fp__cells {
     list-style: none; margin: 0; padding: 0;

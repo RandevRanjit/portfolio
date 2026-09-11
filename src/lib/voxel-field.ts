@@ -26,12 +26,12 @@ export interface VoxelParams {
 }
 
 export const DEFAULTS: Readonly<VoxelParams> = {
-  size: 10,
-  gap: 0,
+  size: 40,
+  gap: 20,
   levels: 5,
   alpha: 0.12,
   curve: 1.5,
-  scale: 0.03,
+  scale: 0.109,
   drift: 0.016,
   fps: 10,
   falloff: true,
