@@ -1,29 +1,29 @@
 ---
 title: "RRHC vs MPCC: A Reactive Racing Controller That Beats Online Optimisation"
-tagline: Final-year dissertation — a model-free heuristic racing controller, benchmarked against an IPOPT-solved MPCC under an enforced fairness contract.
+tagline: Final-year dissertation, submitted April 2026 — a model-free heuristic racing controller benchmarked against an IPOPT-solved MPCC under an enforced fairness contract, and shipped with a 13k-word report and a rendered screencast of the argument.
 order: 4
 section: motorsport
 lineage:
   - { note: "RRHC ported onto a 3D quadrotor — same algorithm, Formula car to FPV drone", slug: aero-lab }
 buckets: [control]
-stack: [Python, NumPy, SciPy, CasADi, IPOPT, Optuna]
+stack: [Python, NumPy, SciPy, CasADi, IPOPT, Optuna, manimgl]
 metrics:
-  - { label: "Lap time vs MPCC", value: "12.2% faster", source: "report/sections/06_conclusion.tex:103" }
-  - { label: "Per-step compute", value: "153x cheaper", source: "report/sections/04_results.tex:43" }
-  - { label: "Deadline overruns (ZOH)", value: "0 (vs 1,870 MPCC)", source: "report/sections/00_abstract.tex:25" }
-  - { label: "Cross-phase significance", value: "Wilcoxon W=253, p=1.9e-5", source: "report/sections/06_conclusion.tex:106" }
-role: Sole author (dissertation). Designed and built the RRHC controller, the MPCC/IPOPT baseline, the 3-DOF Fiala-tyre plant, the fairness-contract harness, and the five-phase statistical evaluation.
+  - { label: "Lap time vs MPCC", value: "12.2% faster", source: "rrhc: report/sections/06_conclusion.tex:104, re-checked 2026-09-11" }
+  - { label: "Per-step compute", value: "153x cheaper", source: "rrhc: report/sections/04_results.tex:21 (timing table at :43), re-checked 2026-09-11" }
+  - { label: "Deadline overruns (ZOH)", value: "0 (vs 1,870 MPCC)", source: "rrhc: report/sections/00_abstract.tex:25, re-checked 2026-09-11" }
+  - { label: "Cross-phase significance", value: "Wilcoxon W=253, p=1.9e-5", source: "rrhc: report/sections/06_conclusion.tex:106, re-checked 2026-09-11" }
+role: Sole author (dissertation). Designed and built the RRHC controller, the MPCC/IPOPT baseline, the 3-DOF Fiala-tyre plant, the fairness-contract harness, the five-phase statistical evaluation, and the animated screencast that presents the result.
 status: case-study
 repo: { kind: private }
-dates: "2025–26"
+dates: "2025–26, submitted Apr 2026"
 ---
 
-My final-year dissertation, *Fair Comparison of Racing Controllers: MPCC vs RRHC*. The headline
-result: a hand-engineered reactive controller with no internal vehicle model and no online solver
-laps a friction-limit racing plant **12.2% faster** than a model-predictive contouring controller
-(MPCC) that solves a nonlinear program every step. It does it at 1/153 the per-step compute cost.
-And with **zero deadline overruns**, where the MPCC blew its 20 ms budget 1,870 times over the
-same trial.
+My final-year dissertation, *Fair Comparison of Racing Controllers: MPCC vs RRHC*, submitted in
+April 2026. The headline result: a hand-engineered reactive controller with no internal vehicle
+model and no online solver laps a friction-limit racing plant **12.2% faster** than a
+model-predictive contouring controller (MPCC) that solves a nonlinear program every step. It does
+it at 1/153 the per-step compute cost. And with **zero deadline overruns**, where the MPCC blew
+its 20 ms budget 1,870 times over the same trial.
 
 The contribution is **RRHC**, a *Reactive Racing Heuristic Controller*. MPCC (a CasADi/IPOPT NLP)
 is the optimisation baseline I built to beat. The interesting claim isn't "heuristics win"; it's
@@ -82,7 +82,8 @@ One pass through the modules per control step:
 
 All track lookups are vectorised `np.interp` over arc-length arrays extended for periodic
 wrapping. That is how the whole controller runs in **0.13 ms/step mean** (0.16 ms P99, 0.20 ms
-max).
+max). The 26 tuneable parameters in `RRHCParams` are all physical quantities — speeds, gains,
+lookahead knots, apex-weight widths — rather than opaque cost coefficients.
 
 ## The MPCC baseline I had to beat
 
@@ -100,6 +101,10 @@ The MPCC is a genuine optimisation controller, not a strawman: a CasADi-symbolic
   makes per-step re-solves tractable.
 - CasADi JIT compilation of the NLP to C (`-O2`), with a fall-back to interpreted mode if the
   shell compiler is unavailable.
+
+That horizon is a tuned value, not a textbook default: `configs/controllers/mpcc.yaml` carries the
+Optuna-selected `N: 28` and `dt: 0.102`, while the dataclass default still in `params.py` is the
+much shorter N=20, dt=0.02 the search started from.
 
 The honest, load-bearing design decision: the MPCC's internal model is a kinematic bicycle, while
 the simulator plant is a dynamic 3-DOF Fiala-tyre model. That mismatch is deliberate. A full
@@ -127,8 +132,8 @@ you, so it's the part I made provable:
   near-zero CG speed (so the car can damp a spin) while going to exactly zero at true standstill,
   and a C-∞ smooth brake-fade keeps the Radau Jacobian kink-free.
 
-The repo carries 201 test functions across plant torture tests (T1–T21), controller,
-track-annotation, metrics, optimisation and contract suites.
+The repo carries 201 test functions across 31 test files — plant torture tests (T1–T21),
+controller, track-annotation, metrics, optimisation and contract suites.
 
 ## The fairness contract — why the comparison stands
 
@@ -176,7 +181,8 @@ makes that cost visible in lap time.
 I didn't report one lap time on one track. Five phases: baseline, compute, control-frequency
 sensitivity, robustness (noise / actuator delay / model mismatch / unseen tracks / drivetrain
 transfer), and tuning complexity, each with proper statistics (paired Wilcoxon, Mann-Whitney,
-bootstrap CIs, and a Saltelli/Sobol global sensitivity analysis with all total-order indices < 1).
+bootstrap CIs, and a Saltelli/Sobol global sensitivity analysis at N_base = 64 — 512 samples —
+with all total-order indices < 1).
 
 The result is a genuine trade-off, not a one-sided win:
 
@@ -193,11 +199,29 @@ RRHC wins on raw speed, compute, and robustness to model error; MPCC's predictiv
 actuator-delay tolerance and generalisation to unseen tracks. The cross-phase advantage is
 significant (22/22 conditions, Wilcoxon W = 253, p = 1.9×10⁻⁵, bootstrap 95% CI [12.4%, 14.0%]).
 
+## What shipped
+
+The dissertation is finished, and what came out of it is three renderings of the same argument:
+
+- **The report** — 13,188 words (`report/word.count`), typeset against the UoM muthesis template,
+  final compile 27 April 2026. Six chapters plus an appendix, with every experimental number
+  pulled from `runs/` artefacts rather than typed in by hand.
+- **A screencast** — 19 scenes written in Python against `manimgl`, rendered at 4K/120 fps and
+  concatenated with `ffmpeg` by `screencast/render_all.sh`. It walks the same path the report
+  does: the gap, the four modules, the fairness contract, the results, the caveats. The cut
+  committed in the repo runs 6 m 45 s; the final submitted cut is 6 m 13 s.
+- **A companion interactive article** — a separate Next.js/MDX site that teaches the
+  style-parameterised controller idea from scratch, with a browser playground that runs the velox
+  TypeScript vehicle-dynamics SDK against a pure-pursuit + PID baseline, so a reader can tune
+  style knobs and race the baseline ghosts on the same track. It lives in its own repo and was
+  last worked on in December 2025, before the final experiments — so it's the teaching companion,
+  not a mirror of the dissertation's results.
+
 ## Honest scope
 
 Simulation only — no sim-to-real validation. RRHC offers no formal guarantees: unlike MPC it
 can't certify constraint satisfaction, only demonstrate it empirically. The "oracle"/DDP
-controller in the tree is a placeholder stub returning zero commands, not a third evaluated
+controller in the tree is a 19-line placeholder returning zero commands, not a third evaluated
 baseline; the real comparison is strictly RRHC vs MPCC. And RRHC's three clear losses (actuator
 delay; chicane-heavy unseen tracks; FWD drivetrain transfer, where RRHC departs the track at
 30.7 s while MPCC completes all three drivetrain configs) are attributed to specific architectural

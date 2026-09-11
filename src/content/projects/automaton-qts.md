@@ -6,10 +6,11 @@ section: quant
 buckets: [systems, control]
 stack: [Python, PyTorch, torchdiffeq, NautilusTrader, hftbacktest, scipy, SQLAlchemy/TimescaleDB]
 metrics:
-  - { label: "Code", value: "45.7k LOC Python", source: "automaton-qts: git ls-files '*.py' | xargs wc -l (2026-05-27)" }
-  - { label: "Tests", value: "1,314 tests", source: "automaton-qts: tests/ + coverage.xml line-rate 0.8189" }
-  - { label: "Crypto contagion (research-stage, n=3)", value: "+9.2%/event", source: "Internal crypto contagion feasibility report §1 (2026-05-25); not a deployed or validated strategy" }
-  - { label: "Terra linked-peer signal (research-stage, n=3)", value: "p=0.0009 @72h", source: "Internal crypto contagion feasibility report §3; n=3 cascades, pipeline not in public repo" }
+  - { label: "Code", value: "45.7k LOC Python", source: "automaton-qts: git ls-files '*.py' | xargs wc -l = 45,712 (2026-09-11)" }
+  - { label: "Tests", value: "1,314 tests, 129 files", source: "automaton-qts: def test_ count over tests/ = 1,314 across 129 files (2026-09-11); the coverage.xml line-rate 0.8189 is an artefact dated 2026-05-22 and predates the crypto package" }
+  - { label: "Crypto contagion (research-stage, n=3)", value: "+9.2%/event", source: "Internal crypto contagion feasibility report §1 (2026-05-25), re-read 2026-09-11; not a deployed or validated strategy, and the E1–E5 scripts behind it were left in /tmp and are gone" }
+  - { label: "Terra linked-peer signal (research-stage, n=3)", value: "p=0.0009 @72h", source: "Internal crypto contagion feasibility report §3 (2026-05-25), re-read 2026-09-11; n=3 cascades, pipeline not in public repo" }
+  - { label: "Live-paper Phase-1 gate", value: "built, never run", source: "automaton-qts: scripts/run_contagion_broadened_backtest.py + src/qts/propagation/crypto/detect.py, merged 2026-05-31; devlog.md still lists running it as the next action and no verdict artefact exists on disk (2026-09-11)" }
 role: Sole author. Built the signal/risk/execution core, the human-gated LLM oversight trail, an agent-based market simulator for synthetic data, and the relation-typed propagation-graph research line (equity negative + crypto positive).
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/Automaton-QTS" }
@@ -74,6 +75,16 @@ Per cascade, the net numbers:
 
 Reactions are BTC-adjusted abnormal CARs (so "everything dumps with BTC" is removed by construction), and the delisted flagship pairs (FTT/LUNA/UST/SRM) are only measurable because I pull `data.binance.vision` archive dumps that retain them. **n=3 cascades**: the Sharpe is illustrative, not forward-credible, and the LLM is pre-cutoff so hindsight is mitigated, not eliminated. I say so in the report.
 
+## What I built next, and the verdict I never got
+
+The obvious next move was to stop studying old cascades and start forward-testing one. The design is written down — spec, plus the rejected alternatives in a decision log — and Phase 1 of it, the part that decides whether there is anything worth forward-testing at all, is built and merged.
+
+Phase 1 broadens the trigger. Flagship cascades are far too rare to produce a paper track record in any sane window, so `ShockDetector` (a Protocol, with `IdiosyncraticDropDetector` as the v0 implementation) fires on any token whose trailing **BTC-adjusted** abnormal return falls past a threshold — 15% over 24h by default, at most one event per token per 72h. BTC-adjusted rather than raw, because a raw drawdown is exactly the market-wide beta the operator is built to strip out. The gate runner feeds those detected events back through the same dataset → fit → Null-A → Null-B → costed-backtest path the flagship study used, and ends on a hard GO/NO-GO: the linked-peer drawdown must be significant, the operator must beat the pairwise baseline, and the market-neutral Sharpe must clear 1.0. The watchlist it runs over is a union of the cascade universes and their structural links — 33 tokens, 31 typed edges.
+
+Writing that also caught something embarrassing about the number in the section above. The backtest annualises its Sharpe with an `events_per_year` argument whose default was a hardcoded `12.0` — so **1.49 is scaled as though twelve cascades happen a year**, while the three I actually measured span about fourteen months. The new code computes the detected frequency from the panel instead, and its own docstring says the old default "would otherwise misscale the Sharpe". Read 1.49 as illustrative arithmetic, not as a Sharpe.
+
+And then it stopped. Running the gate needs the local LLM up and the Binance archive pulls done, and I never got back to it. The last commit on `main` is 2026-05-31, the devlog still lists running the gate as the next action, and there is no verdict file anywhere on disk. So the detector is real, the gate is real and unit-tested (9 tests for the new pieces, 36 across the crypto package), and the answer it exists to produce does not exist.
+
 ## The engine and the simulator around it
 
 The propagation work sits on a real trading stack. Technical indicators, FinBERT/VADER/GDELT sentiment fusion, and a 2-state Gaussian-HMM vol regime feed a composite alpha. Behind that sits a risk engine: a circuit breaker (compared in absolute-loss units to dodge float-division rounding) plus max-drawdown / position-size / open-position limits. The LLM oversight layer is **analyst-only**. It can *propose* parameter changes, but every change goes through a Rich-terminal approve/reject UI with a git audit trail, and `config/risk_limits.json` is architecturally off-limits, guarded by a pre-commit hook.
@@ -106,4 +117,6 @@ Strategies run in three places: a bar-level deterministic backtester, a Nautilus
 
 ## Honest scope
 
-The "50 µs latency" HFT path is a thin wrapper over the Rust `hftbacktest` library (lazy-imported; the engine is theirs, the adapter and result-mapping are mine). I did not write a price-time-priority matching engine. The crypto edge is `n=3` and needs post-cutoff out-of-sample cascades and an event-detection feed before it's a strategy rather than a study. Prices in my own bar-level backtester are floats on a single-level book. The wins here are the *method* and the *honesty of the evaluation*, not a deployed money-printer.
+The "50 µs latency" HFT path is a thin wrapper over the Rust `hftbacktest` library (lazy-imported; the engine is theirs, the adapter and result-mapping are mine). I did not write a price-time-priority matching engine. The crypto edge is `n=3` and still needs post-cutoff out-of-sample cascades before it is a strategy rather than a study; the event-detection feed it also needed now exists as code, but has never been run end to end.
+
+The reproducibility is worse than the write-up implies. The five experiment scripts that produced the +9.2% and the p-values were written into `/tmp` and never promoted into `scripts/` — they are gone. What survives is the dated report and the committed package (nulls, dataset builder, costed backtest, 36 tests), which is enough to rebuild the harness and not enough to re-run it today. The Binance archive adapters that make the delisted pairs measurable are still uncommitted, so they are not on GitHub either. Prices in my own bar-level backtester are floats on a single-level book, and the NautilusTrader live path is a skeleton I know to be broken — `nautilus/live.py` builds the data and exec client configs and then never passes them to the node. The wins here are the *method* and the *honesty of the evaluation*, not a deployed money-printer.

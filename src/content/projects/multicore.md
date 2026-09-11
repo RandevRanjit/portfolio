@@ -6,27 +6,27 @@ section: quant
 buckets: [systems]
 stack: [C, "C++20", pthreads, OpenMP, "std::barrier", NUMA]
 metrics:
-  - { label: "Temporal-blocking stencil", value: "132.5× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:28" }
-  - { label: "OpenMP stencil", value: "128.6× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:30" }
-  - { label: "NUMA vecadd speedup", value: "30.7× speedup", source: "multicore: lab1-vecadd/vecadd/results/statistics.csv:80" }
-  - { label: "Fine-spinlock philosophers", value: "1,039K meals/s", source: "multicore: lab2-philosophers/benchmarks.csv" }
-  - { label: "Sync reduction (stencil)", value: "1 barrier / 128 iters", source: "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK=128)" }
-role: Sole author (s94810rr), three labs. Implemented NUMA first-touch pthreads vecadd; four-variant dining philosophers (coarse/fine × mutex/spinlock) with lock-ordering deadlock prevention; and a temporal-blocking 1-D Poisson stencil in both std::thread+std::barrier and OpenMP. Benchmarked on mcore72 (2× Xeon Platinum 8452Y, 72 cores, 2 NUMA nodes).
+  - { label: "Temporal-blocking stencil", value: "132.5× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:28 — 132.51× marker, 124.72× lo-95 (re-read 2026-09-11)" }
+  - { label: "OpenMP stencil", value: "128.6× @ 72 cores", source: "multicore: lab3-stencil/CHANGELOG.md:30 — 128.59× marker, 116.70× lo-95 (re-read 2026-09-11)" }
+  - { label: "NUMA vecadd speedup", value: "30.7× @ 72 threads", source: "multicore: lab1-vecadd/vecadd/results/statistics.csv:80 — 30.6606× on 256M, 20 runs (re-measured 2026-09-11)" }
+  - { label: "Fine-spinlock philosophers", value: "1,039K meals/s", source: "multicore: lab2-philosophers/benchmarks.csv — fine-spinlock @64T, mean of 5 runs = 1039.22K (re-measured 2026-09-11)" }
+  - { label: "Sync reduction (stencil)", value: "1 barrier / 128 iters", source: "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK_LARGE = 128) — re-checked 2026-09-11" }
+role: Sole author (s94810rr), three labs. Implemented NUMA first-touch pthreads vecadd; four-variant dining philosophers (coarse/fine × mutex/spinlock) with lock-ordering deadlock prevention; and a temporal-blocking 1-D Poisson stencil in both std::thread+std::barrier and OpenMP. Benchmarked on mcore72 (2× Xeon Platinum 8452Y, 72 cores, 2 NUMA nodes) through the OGE batch queue.
 status: case-study
 repo: { kind: case-study }
 dates: "2025–26"
 ---
 
-Three parallelism labs of increasing difficulty, all benchmarked on mcore72: a 2-socket machine, 2× Intel Xeon Platinum 8452Y, 72 physical cores split across two NUMA nodes (36 each), 144 hardware threads. The same thread runs through all three, and it is the one that matters in latency-sensitive systems. What limits scaling is rarely the arithmetic. It is synchronisation, memory locality, and lock granularity. Every claim below is measured on the real machine, not asserted.
+Three parallelism labs of increasing difficulty, all benchmarked on mcore72: a 2-socket machine, 2× Intel Xeon Platinum 8452Y, 72 physical cores split across two NUMA nodes (36 each), 144 hardware threads. Every run goes through the OGE batch queue, because timings taken on a shared login session aren't timings. The same thread runs through all three labs, and it is the one that matters in latency-sensitive systems. What limits scaling is rarely the arithmetic. It is synchronisation, memory locality, and lock granularity. Every claim below is measured on the real machine, not asserted.
 
 ## Lab 3 — a 1-D Poisson stencil that hits 132× (the hard one)
 
-The marking baseline for this lab is a naive barrier-per-iteration parallelisation that tops out at 12–18×. The shipped solution reaches **132.5× at 72 threads** (std::thread + `std::barrier`) and **128.6× with OpenMP**. Both lower-95%-CI bounds clear the top marking tier (>40× / >50×) by more than 2×. That gap is entirely engineering, and the core idea is **temporal blocking** with cross-tile carry-over.
+The lab spec's own reference point is a naive barrier-per-iteration parallelisation that "only delivers a speedup of 12-18x on mcore72" even at 8M elements. The shipped solution reaches **132.5× at 72 threads** (std::thread + `std::barrier`) and **128.6× with OpenMP**. Both lower-95%-CI bounds — 124.7× and 116.7× — clear the top marking tier (>40× / >50×) by more than 2×. That gap is entirely engineering, and the core idea is **temporal blocking** with cross-tile carry-over.
 
 ```text
 stencil speedup at 72 threads (lower-95%-CI marker value)
 
-naive barrier/iter   |####  12-18x  (marking baseline)
+naive barrier/iter   |####  12-18x  (lab spec baseline)
 OpenMP               |################################ 128.6x
 std::thread+barrier  |################################# 132.5x
                      +-------+-------+-------+-------+--
@@ -62,45 +62,46 @@ The hard part of this lab is correctness, not speed; "the easiest way to make a 
 - A thread declaring convergence and returning while others iterate → one atomic `any_changed` reduction in the completion function decides termination for everyone.
 - The iteration count clobbered by whichever thread finished last → recorded once, in the completion function.
 
-Temporal blocking has its own subtle failure mode, and the changelog documents it: tile-boundary convergence detection can overshoot serial's exact stopping point by up to K−1 iterations. For small grids that converge to large-magnitude steady states, that drift exceeds the verifier's 0.02 absolute tolerance. The fix is a runtime `T_BLOCK` switch: K=128 at/above 4M elements (where the bench lives and convergence never triggers inside 2048 iters), K=1 (serial-equivalent semantics) below it. A functional sweep of 160 configurations (5 forcing functions × 4 sizes × 4 thread counts × 2 binaries) passes — after the grep that checks results was itself fixed. An earlier "60/60 pass" had been matching the wrong error string and masking real failures.
+Temporal blocking has its own subtle failure mode, and the changelog documents it: tile-boundary convergence detection can overshoot serial's exact stopping point by up to K−1 iterations. For small grids that converge to large-magnitude steady states, that drift exceeds the verifier's 0.02 absolute tolerance. The fix is a runtime `T_BLOCK` switch: K=128 at/above 4M elements (where the bench lives and convergence never triggers inside 2048 iters), K=1 (serial-equivalent semantics) below it. A functional sweep of 160 configurations (5 forcing functions × 4 sizes × 4 thread counts × 2 binaries) passes — after the grep that checks results was itself fixed. An earlier "60/60 pass" had been matching `Verification failed` when the verifier actually prints `Output MISMATCH`, and was masking real failures.
 
 NUMA placement is handled by first-touch: each thread `madvise(MADV_DONTNEED)`s the page-aligned interior of its slice, then `memset`s it, re-faulting those pages onto its own socket instead of the main thread's. Threads pin to CPU `tid`, which on Linux lands them one-per-physical-core (0–35 on node 0, 36–71 on node 1) before any hyperthread siblings.
 
 ## Lab 1 — NUMA-aware vecadd, and why it stops at 30.7×
 
-A pthreads `c[i] = a[i] + b[i]` over `double` arrays from 1M to 256M elements. The headline is **30.7× at 72 threads on 256M elements**, but the more interesting result is the shape of the scaling and the ceiling it runs into.
+A pthreads `c[i] = a[i] + b[i]` over `double` arrays from 1M to 256M elements, 20 runs per configuration. The headline is **30.7× at 72 threads on 256M elements**, but the more interesting result is the shape of the scaling and the ceiling it runs into.
 
 The decisive design choice is parallel **first-touch** initialisation. Each thread pins to a core and initialises its own slice (`init_thread_worker`) before the compute pass touches it (`vecadd_thread_worker`), so each page is physically allocated on the NUMA node that will later read it. Without this, a multi-socket machine pays a cross-socket interconnect hop on roughly half its accesses and the speedup collapses. Larger vectors scale better because the per-thread working set finally dwarfs the fixed thread-spawn and affinity overhead: 1M peaks at 4.8× (8 threads), 16M at 15.6× (32 threads), 256M at 30.7× (72 threads).
 
 ```text
-vecadd speedup at peak thread count, by vector size
+vecadd speedup by thread count, 256M elements (and small-vector peaks)
 
-  1M @   8T |#####   4.8x
- 16M @  32T |################   15.6x
-256M @  72T |###############################   30.7x
-256M @ 288T |#####################   21.3x  (hyperthreads)
+  1M @   8T |#####   4.8x    <- peak for 1M
+ 16M @  32T |################   15.6x    <- peak for 16M
+256M @  72T |###############################   30.7x  <- one thread/core
+256M @ 144T |############################   28.2x  (all hyperthreads)
+256M @ 288T |#####################   21.3x  (2x oversubscribed)
             +-------+-------+-------+-------+---
             0       8       16      24      32  (x)
 ```
-*Fig. 3 — vecadd peak speedup by vector size; the ~3% serial fraction caps theory near 33×, and 288 hyperthreads regress to 21.3×.*
+*Fig. 3 — vecadd speedup by vector size and thread count; the ~3% serial fraction caps theory near 33×, and nothing above one thread per physical core helps.*
 
-Two honest ceilings. The kernel is memory-bandwidth bound, 24 bytes of traffic (2 reads + 1 write) per add, arithmetic intensity ~0.04 FLOP/byte, so an estimated ~3% serial fraction caps the theoretical speedup near 33×, and 30.7× sits right against it. And scaling degrades past 72 threads (down to 21.3× at 288): hyperthreads share a core's load/store ports and don't add memory bandwidth, so logical threads buy nothing on a bandwidth-bound workload. Built deliberately at -O0 to isolate parallel scaling from compiler auto-vectorisation; the goal of this lab is the threading curve, not peak throughput.
+Two honest ceilings. The kernel is memory-bandwidth bound, 24 bytes of traffic (2 reads + 1 write) per add, arithmetic intensity ~0.04 FLOP/byte, so an estimated ~3% serial fraction caps the theoretical speedup near 33×, and 30.7× sits right against it. And scaling never improves past one thread per physical core: filling all 144 hardware threads gives 28.2×, and oversubscribing to 288 falls to 21.3×. Hyperthread siblings share a core's load/store ports and add no memory bandwidth, so logical threads buy nothing on a bandwidth-bound workload — and past the hardware thread count you are just paying for context switching. Built deliberately at `-O0` (forced in `CMakeLists.txt`, not just a default) to isolate parallel scaling from compiler auto-vectorisation; the goal of this lab is the threading curve, not peak throughput. A separate check confirms the point: naive, hand-optimised and SIMD variants all land within ±3% of each other, at roughly 450 MOPS (~10.8 GB/s), because the memory bus is the wall.
 
 ## Lab 2 — dining philosophers: granularity vs. contention, four ways
 
 Four implementations of the classic problem, the cross product of lock granularity (one global lock vs. one lock per fork) and lock type (`pthread_mutex_t` vs. `pthread_spinlock_t`), benchmarked at 2–64 threads, 5 runs each, on a fixed-runtime "meals eaten" throughput metric. Deadlock is prevented by **lock ordering**: a philosopher always acquires the lower-ID fork first, breaking the circular-wait Coffman condition.
 
-The results are a clean lesson in what each lock costs:
+The results are a clean lesson in what each lock costs (means over 5 runs, thousands of meals/s):
 
-| Variant | Behaviour | Peak |
+| Variant | Behaviour | Measured |
 |---|---|---|
-| **Coarse-mutex** | One global lock serialises all eating; plateaus | ~123K @ 8T, flat after |
-| **Coarse-spinlock** | Lower per-acquire cost, then busy-wait burns cores | ~231K @ 32T, then *declines* |
-| **Fine-mutex** | Per-fork lock; non-adjacent philosophers eat in parallel | ~1,027K @ 64T |
-| **Fine-spinlock** | Same, with cheaper short critical sections | **~1,039K @ 64T** (1,055K max) |
+| **Coarse-mutex** | One global lock serialises all eating; plateaus | 122K @ 8T, flat 123–130K to 64T |
+| **Coarse-spinlock** | Lower per-acquire cost, then busy-wait burns cores | peaks 231K @ 32T, falls to 173K @ 64T |
+| **Fine-mutex** | Per-fork lock; non-adjacent philosophers eat in parallel | 1,028K @ 64T |
+| **Fine-spinlock** | Same, with cheaper short critical sections | **1,039K @ 64T** (1,056K best run) |
 
-The point is reading *why*. Coarse locking serialises everything, so it can't beat single-threaded throughput no matter how many cores you add; extra threads only add contention. Fine-grained locking lets ⌊N/2⌋ non-adjacent philosophers eat concurrently, and throughput scales near-linearly to 64 threads. Spinlocks edge out mutexes at every granularity because the critical section is a handful of instructions — busy-waiting is cheaper than the OS block/wake round-trip when you'll get the lock in nanoseconds. The coarse-spinlock curve is the cautionary tale. It wins at moderate thread counts, then falls off a cliff past 32: once contention is high, busy-waiting just torches CPU cycles that a mutex would have yielded.
+The point is reading *why*. Coarse locking serialises everything, so it can't beat single-threaded throughput no matter how many cores you add; extra threads only add contention. Fine-grained locking lets ⌊N/2⌋ non-adjacent philosophers eat concurrently, and throughput scales near-linearly to 64 threads — 8T→64T is an 8× thread increase for a 7.9× throughput increase on fine-spinlock. Spinlocks edge out mutexes at every granularity because the critical section is a handful of instructions — busy-waiting is cheaper than the OS block/wake round-trip when you'll get the lock in nanoseconds. The coarse-spinlock curve is the cautionary tale. It wins at moderate thread counts, then falls off a cliff past 32: once contention is high, busy-waiting just torches CPU cycles that a mutex would have yielded.
 
 ---
 
-_Private UoM coursework (COMP35112, Chip Multiprocessors), presented as a case study, no code link. Stencil headline speedups are marker values (serial_mean / lower-95%-CI parallel runtime); parenthetical lo-95% values are the conservative lower bounds on speedup. Vecadd and philosophers figures are means over ≥5 runs. All measured on mcore72; correctness proven by full functional sweeps, not assumed._
+_Private UoM coursework (COMP35112, Chip Multiprocessors), presented as a case study, no code link. Stencil headline speedups are marker values (serial_mean / lower-95%-CI parallel runtime); the lo-95 figures quoted alongside are the conservative lower bounds on speedup. Vecadd figures are means over 20 runs, philosophers over 5. All measured on mcore72 via OGE; correctness proven by full functional sweeps, not assumed. No official mark for these labs is recorded on disk — the marking tiers quoted are from the coursework brief._

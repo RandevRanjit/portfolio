@@ -15,7 +15,7 @@
 // --- cover ---
 #cover(
   "Randev Ranjit",
-  "Designed and engineered, artfully — silicon to software.",
+  "Designed and engineered, artfully. Silicon to software.",
   "BSc Computer Science, Manchester (2023–2026) · Incoming MSc Computer & Embedded Systems Engineering, TU Delft (Sept 2026)",
 )
 

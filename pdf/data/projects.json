@@ -22,22 +22,27 @@
         {
           "label": "Code",
           "value": "45.7k LOC Python",
-          "source": "automaton-qts: git ls-files '*.py' | xargs wc -l (2026-05-27)"
+          "source": "automaton-qts: git ls-files '*.py' | xargs wc -l = 45,712 (2026-09-11)"
         },
         {
           "label": "Tests",
-          "value": "1,314 tests",
-          "source": "automaton-qts: tests/ + coverage.xml line-rate 0.8189"
+          "value": "1,314 tests, 129 files",
+          "source": "automaton-qts: def test_ count over tests/ = 1,314 across 129 files (2026-09-11); the coverage.xml line-rate 0.8189 is an artefact dated 2026-05-22 and predates the crypto package"
         },
         {
           "label": "Crypto contagion (research-stage, n=3)",
           "value": "+9.2%/event",
-          "source": "Internal crypto contagion feasibility report §1 (2026-05-25); not a deployed or validated strategy"
+          "source": "Internal crypto contagion feasibility report §1 (2026-05-25), re-read 2026-09-11; not a deployed or validated strategy, and the E1–E5 scripts behind it were left in /tmp and are gone"
         },
         {
           "label": "Terra linked-peer signal (research-stage, n=3)",
           "value": "p=0.0009 @72h",
-          "source": "Internal crypto contagion feasibility report §3; n=3 cascades, pipeline not in public repo"
+          "source": "Internal crypto contagion feasibility report §3 (2026-05-25), re-read 2026-09-11; n=3 cascades, pipeline not in public repo"
+        },
+        {
+          "label": "Live-paper Phase-1 gate",
+          "value": "built, never run",
+          "source": "automaton-qts: scripts/run_contagion_broadened_backtest.py + src/qts/propagation/crypto/detect.py, merged 2026-05-31; devlog.md still lists running it as the next action and no verdict artefact exists on disk (2026-09-11)"
         }
       ],
       "role": "Sole author. Built the signal/risk/execution core, the human-gated LLM oversight trail, an agent-based market simulator for synthetic data, and the relation-typed propagation-graph research line (equity negative + crypto positive).",
@@ -50,7 +55,7 @@
     },
     {
       "title": "Cellular-Automaton SoC Accelerator",
-      "tagline": "A from-scratch SystemVerilog drawing unit that renders Wolfram cellular automata — programmable rule as a pure lookup, LFSR-seeded, taken through Vivado to silicon and demoed live on a monitor.",
+      "tagline": "A from-scratch SystemVerilog drawing unit that renders Wolfram cellular automata — programmable rule as a pure lookup, LFSR-seeded, taken through Vivado to an Artix-7 and demoed live on a monitor.",
       "order": 2,
       "section": "quant",
       "buckets": [
@@ -67,25 +72,30 @@
         {
           "label": "Accelerator (block)",
           "value": "4,433 LUT",
-          "source": "Phase 4 SOC report, Table 3 (u_automaton hierarchical utilisation)"
+          "source": "ca-accelerator: extracted/Phase4/Phase4/Phase_4_SOC_Report.pdf Table 3 — u_automaton hierarchical utilisation (re-read 2026-09-11)"
         },
         {
           "label": "Whole SoC fill",
           "value": "96.0% BRAM",
-          "source": "Phase 4 SOC report, Table 1 (post-implementation, XC7A35T)"
+          "source": "ca-accelerator: Phase_4_SOC_Report.pdf Table 1 + Fig. 5 — 72/75 BRAM36 post-implementation (re-read 2026-09-11)"
         },
         {
           "label": "Rule space",
           "value": "256 rules",
-          "source": "ca-accelerator: Phase2/Phase2/unit_automaton.sv:281-282 (rule_eff[{L,M,R}])"
+          "source": "ca-accelerator: extracted/Phase2/Phase2/unit_automaton.sv:281-282 (nb_idx = {L,M,R}; nxt = rule_eff[nb_idx]) — re-checked 2026-09-11"
         },
         {
           "label": "Functional coverage",
           "value": "100% stmt/branch/cond/FSM",
-          "source": "Phase 2 SOC report §4.2 (Questa, toggle 30.4% justified)"
+          "source": "ca-accelerator: Phase_2_SOC_Report.pdf §4.2 — Questa; toggle 30.4%, justified in §5 (re-read 2026-09-11)"
+        },
+        {
+          "label": "Handshake SVA",
+          "value": "5 asserts + 1 cover",
+          "source": "ca-accelerator: extracted/Phase2/Phase2/automaton_Testbench.sv:502,506,510,514,518,522 (grep, 2026-09-11)"
         }
       ],
-      "role": "Designed unit_automaton from scratch (programmable rule-as-lookup, 32-bit LFSR seed, 3-state compute/write FSM, byte-lane framestore writes with req/ack backpressure), wrote a coverage-driven testbench to 100% functional coverage, integrated it into the drawing engine replacing a dummy slot, drove it from a RISC-V MMIO program, and closed it through Vivado synthesis + implementation on Artix-7 with a live monitor demo.",
+      "role": "Designed unit_automaton from scratch (programmable rule-as-lookup, 32-bit LFSR seed, 3-state compute/write FSM, byte-lane framestore writes with req/ack backpressure), wrote a coverage-driven testbench to 100% statement/branch/condition/FSM coverage, integrated it into the drawing engine replacing a dummy slot, drove it from a RISC-V MMIO program, and closed it through Vivado synthesis + implementation on Artix-7 with a live monitor demo.",
       "status": "case-study",
       "repo": {
         "kind": "case-study"
@@ -94,7 +104,7 @@
     },
     {
       "title": "Aero-Lab — Quadrotor Flight Sim",
-      "tagline": "Hand-rolled 6-DOF quadrotor dynamics plus four racing controllers — PID, MPCC (acados SQP-RTI), a reactive RRHC, and a PPO policy — with PID/MPCC/RRHC benchmarked head-to-head on a 12-course fairness harness.",
+      "tagline": "Hand-rolled 6-DOF quadrotor dynamics plus four racing controllers — PID, MPCC (acados SQP-RTI), a solver-free RRHC, and a PPO policy — compared under a machine-enforced fairness contract, with the RRHC now re-ported to deterministic bare-metal C as declared prior work for a TU Delft MSc.",
       "order": 3,
       "section": "drones",
       "lineage": [
@@ -114,32 +124,37 @@
         "CasADi",
         "Gymnasium",
         "stable-baselines3",
-        "Optuna",
+        "C",
         "VisPy"
       ],
       "metrics": [
         {
           "label": "Tests",
-          "value": "357 tests",
-          "source": "aero-lab: pytest tests/ — 357 passed, 4 skipped, 1 xfailed"
+          "value": "381 tests",
+          "source": "aero-lab: grep -rc 'def test_' tests → 381 test functions across 35 files (2026-09-11)"
         },
         {
           "label": "Controllers",
-          "value": "6 controllers",
-          "source": "aero-lab: src/aerolab/controllers/{pid_dfbc,mpcc,rrhc,rl,aubry}"
+          "value": "8 registered",
+          "source": "aero-lab: src/aerolab/controllers/factory.py:60-69 CONTROLLER_REGISTRY — 4 racing + 4 AUBRY (2026-09-11)"
         },
         {
           "label": "RRHC vs MPCC",
-          "value": "162x cheaper/tick",
-          "source": "aero-lab: runs/telemetry_tuned/results.md"
+          "value": "~22x less compute",
+          "source": "aero-lab: docs/reference/benchmark-results.md — matched default configs, 0.14 s vs 3.17 s wall-clock per lap (measured 2026-07-08)"
+        },
+        {
+          "label": "C port vs Python",
+          "value": "max |Δω| 1.4e-12 rad/s",
+          "source": "aero-lab: thesis/wp2-rrhc-port/README.md — Stage B float port replayed against a 643-tick golden trace (2026-07-08)"
         },
         {
           "label": "Code",
-          "value": "~8.5k src LOC",
-          "source": "aero-lab: wc -l src/ tests/"
+          "value": "~9.0k src LOC",
+          "source": "aero-lab: git ls-files 'src/*.py' | xargs wc -l → 9,038 src + 7,303 tests (2026-09-11)"
         }
       ],
-      "role": "Sole author. Hand-rolled the 6-DOF rigid-body dynamics (RK4, motor lag, gyroscopic torque, drag), the analytic differential-flatness inner loop shared by every controller, an acados SQP-RTI MPCC, a CTBR PPO env + policy, and a fairness contract (pre-flight + watchdog + post-hoc audit) that enforces identical plant, course, and control rate across all controllers.",
+      "role": "Sole author. Hand-rolled the 6-DOF rigid-body dynamics (RK4, motor lag, gyroscopic torque, drag), the analytic differential-flatness inner loop shared by every controller, an acados SQP-RTI MPCC, a CTBR PPO env + policy, and a fairness contract (pre-flight + watchdog + post-hoc audit) that enforces identical plant, course, and control rate across all controllers. Since July 2026 also the offline table-bake and bare-metal C reimplementation of the RRHC, validated bit-close against the Python reference.",
       "status": "working",
       "repo": {
         "kind": "private"
@@ -148,7 +163,7 @@
     },
     {
       "title": "RRHC vs MPCC: A Reactive Racing Controller That Beats Online Optimisation",
-      "tagline": "Final-year dissertation — a model-free heuristic racing controller, benchmarked against an IPOPT-solved MPCC under an enforced fairness contract.",
+      "tagline": "Final-year dissertation, submitted April 2026 — a model-free heuristic racing controller benchmarked against an IPOPT-solved MPCC under an enforced fairness contract, and shipped with a 13k-word report and a rendered screencast of the argument.",
       "order": 4,
       "section": "motorsport",
       "lineage": [
@@ -166,36 +181,37 @@
         "SciPy",
         "CasADi",
         "IPOPT",
-        "Optuna"
+        "Optuna",
+        "manimgl"
       ],
       "metrics": [
         {
           "label": "Lap time vs MPCC",
           "value": "12.2% faster",
-          "source": "report/sections/06_conclusion.tex:103"
+          "source": "rrhc: report/sections/06_conclusion.tex:104, re-checked 2026-09-11"
         },
         {
           "label": "Per-step compute",
           "value": "153x cheaper",
-          "source": "report/sections/04_results.tex:43"
+          "source": "rrhc: report/sections/04_results.tex:21 (timing table at :43), re-checked 2026-09-11"
         },
         {
           "label": "Deadline overruns (ZOH)",
           "value": "0 (vs 1,870 MPCC)",
-          "source": "report/sections/00_abstract.tex:25"
+          "source": "rrhc: report/sections/00_abstract.tex:25, re-checked 2026-09-11"
         },
         {
           "label": "Cross-phase significance",
           "value": "Wilcoxon W=253, p=1.9e-5",
-          "source": "report/sections/06_conclusion.tex:106"
+          "source": "rrhc: report/sections/06_conclusion.tex:106, re-checked 2026-09-11"
         }
       ],
-      "role": "Sole author (dissertation). Designed and built the RRHC controller, the MPCC/IPOPT baseline, the 3-DOF Fiala-tyre plant, the fairness-contract harness, and the five-phase statistical evaluation.",
+      "role": "Sole author (dissertation). Designed and built the RRHC controller, the MPCC/IPOPT baseline, the 3-DOF Fiala-tyre plant, the fairness-contract harness, the five-phase statistical evaluation, and the animated screencast that presents the result.",
       "status": "case-study",
       "repo": {
         "kind": "private"
       },
-      "dates": "2025–26"
+      "dates": "2025–26, submitted Apr 2026"
     },
     {
       "title": "Stump — 16-bit RISC CPU closed on Spartan-6 silicon",
@@ -261,30 +277,30 @@
         {
           "label": "Temporal-blocking stencil",
           "value": "132.5× @ 72 cores",
-          "source": "multicore: lab3-stencil/CHANGELOG.md:28"
+          "source": "multicore: lab3-stencil/CHANGELOG.md:28 — 132.51× marker, 124.72× lo-95 (re-read 2026-09-11)"
         },
         {
           "label": "OpenMP stencil",
           "value": "128.6× @ 72 cores",
-          "source": "multicore: lab3-stencil/CHANGELOG.md:30"
+          "source": "multicore: lab3-stencil/CHANGELOG.md:30 — 128.59× marker, 116.70× lo-95 (re-read 2026-09-11)"
         },
         {
           "label": "NUMA vecadd speedup",
-          "value": "30.7× speedup",
-          "source": "multicore: lab1-vecadd/vecadd/results/statistics.csv:80"
+          "value": "30.7× @ 72 threads",
+          "source": "multicore: lab1-vecadd/vecadd/results/statistics.csv:80 — 30.6606× on 256M, 20 runs (re-measured 2026-09-11)"
         },
         {
           "label": "Fine-spinlock philosophers",
           "value": "1,039K meals/s",
-          "source": "multicore: lab2-philosophers/benchmarks.csv"
+          "source": "multicore: lab2-philosophers/benchmarks.csv — fine-spinlock @64T, mean of 5 runs = 1039.22K (re-measured 2026-09-11)"
         },
         {
           "label": "Sync reduction (stencil)",
           "value": "1 barrier / 128 iters",
-          "source": "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK=128)"
+          "source": "multicore: lab3-stencil/worker_thread.cpp:33,58 (T_BLOCK_LARGE = 128) — re-checked 2026-09-11"
         }
       ],
-      "role": "Sole author (s94810rr), three labs. Implemented NUMA first-touch pthreads vecadd; four-variant dining philosophers (coarse/fine × mutex/spinlock) with lock-ordering deadlock prevention; and a temporal-blocking 1-D Poisson stencil in both std::thread+std::barrier and OpenMP. Benchmarked on mcore72 (2× Xeon Platinum 8452Y, 72 cores, 2 NUMA nodes).",
+      "role": "Sole author (s94810rr), three labs. Implemented NUMA first-touch pthreads vecadd; four-variant dining philosophers (coarse/fine × mutex/spinlock) with lock-ordering deadlock prevention; and a temporal-blocking 1-D Poisson stencil in both std::thread+std::barrier and OpenMP. Benchmarked on mcore72 (2× Xeon Platinum 8452Y, 72 cores, 2 NUMA nodes) through the OGE batch queue.",
       "status": "case-study",
       "repo": {
         "kind": "case-study"
@@ -293,7 +309,7 @@
     },
     {
       "title": "ONI — Local-LLM Agent Harness",
-      "tagline": "79k-LOC single-crate Rust harness driving a local llama.cpp / MLX server through a 33-tool fenced-code protocol, a graph working-memory, and harness-managed compaction — with 2,151 tests and µs/ns Criterion latency contracts.",
+      "tagline": "102k-LOC single-crate Rust harness driving a local llama.cpp / MLX server through a 38-tool fenced-code protocol, a graph working-memory, a tree-sitter code graph and an in-loop LSP client — 2,656 tests, µs/ns Criterion latency contracts, and a scored experiment behind every feature that shipped.",
       "order": 7,
       "section": "other",
       "buckets": [
@@ -303,6 +319,8 @@
         "Rust",
         "tokio",
         "reqwest",
+        "tree-sitter",
+        "tantivy",
         "criterion",
         "llama.cpp",
         "MLX"
@@ -310,36 +328,46 @@
       "metrics": [
         {
           "label": "Codebase",
-          "value": "79.2k LOC Rust",
-          "source": "oni-preview: git ls-files '*.rs' | xargs wc -l"
+          "value": "102.1k LOC Rust",
+          "source": "oni/preview: git ls-files '*.rs' | xargs wc -l → 102,091 (2026-09-11)"
         },
         {
           "label": "Tests",
-          "value": "2,151 tests",
-          "source": "oni-preview: grep -rn '#[test]|#[tokio::test]' src/"
+          "value": "2,656 tests",
+          "source": "oni/preview: grep -rE '#[test]|#[tokio::test]' src/ tests/ (2026-09-11)"
+        },
+        {
+          "label": "Tool surface",
+          "value": "38 fenced tools",
+          "source": "oni/preview: src/parser/registry.rs:14 (TOOL_NAMES, 38 entries) (2026-09-11)"
         },
         {
           "label": "Parser budget",
           "value": "<100 µs",
-          "source": "oni-preview: benches/parser.rs:8"
+          "source": "oni/preview: benches/parser.rs:8, 16 stream fixtures (2026-09-11)"
         },
         {
           "label": "Tool dispatch budget",
           "value": "<5 ms/call",
-          "source": "oni-preview: benches/tools.rs:13"
+          "source": "oni/preview: benches/tools.rs:13 (2026-09-11)"
         },
         {
           "label": "Loop-detector budget",
           "value": "<50 ns/KB",
-          "source": "oni-preview: benches/lit.rs:6"
+          "source": "oni/preview: benches/lit.rs:6 (2026-09-11)"
         },
         {
           "label": "Backends",
           "value": "3 backends",
-          "source": "oni-preview: src/backend.rs:53"
+          "source": "oni/preview: src/backend.rs:53-57 (llamacpp / mlx / omlx) (2026-09-11)"
+        },
+        {
+          "label": "Best scored eval run",
+          "value": "9/9 on L1, ×9",
+          "source": "oni/preview: docs/research/GROUND_TRUTH.md §9 — nine on-disk 9/9 L1 runs (2026-09-11)"
         }
       ],
-      "role": "Sole author. Designed and built the whole harness: the OMTF v0.4 fenced-code tool protocol and its 33-tool parser, the backend seam abstracting three inference servers, the graph working-memory with BFS gather and harness-managed compaction, the LIT/SIT stream-loop detectors, and the process-group SIGKILL sandbox. Every behaviour-changing feature is greenlit, rollback-tracked, and validated by scored A/B runs.",
+      "role": "Sole author. Designed and built the whole harness: the OMTF v0.4 fenced-code tool protocol and the parser that normalises three native XML dialects into it, the backend seam over three inference servers, the graph working-memory with BFS gather and harness-managed compaction, a tree-sitter code knowledge-graph, an in-loop LSP diagnostics client, the LIT/SIT stream-loop detectors, the two-role delegate orchestrator, and the process-group SIGKILL sandbox. Every behaviour-changing feature is greenlit, rollback-tracked, and either validated or killed by a scored run.",
       "status": "working",
       "repo": {
         "kind": "private"
@@ -347,8 +375,8 @@
       "dates": "2026"
     },
     {
-      "title": "DAWgit — Git for Ableton Projects",
-      "tagline": "A macOS daemon that gives Ableton Live real version control — diffing the music, not the bytes. Semantic .als diff, per-file branching that never touches HEAD, SHA-256 audio LFS, over a Unix-socket IPC bus.",
+      "title": "ARMED — Git for Ableton Sessions",
+      "tagline": "A macOS menubar app over a Rust daemon that gives Ableton Live real version control — diffing the music, not the bytes. Semantic .als diff, per-song variations that never touch HEAD, and a byte-splice merge engine that edits the project XML in place. Signed, notarised and universal at 0.2.8 — and deliberately not published yet.",
       "order": 8,
       "section": "music",
       "buckets": [
@@ -363,36 +391,52 @@
         "SHA-256",
         "Unix sockets",
         "launchd",
-        "SwiftUI"
+        "SwiftUI",
+        "Next.js"
       ],
       "metrics": [
         {
+          "label": "Codebase",
+          "value": "27.5k Rust · 11.9k Swift",
+          "source": "armed: git ls-files '*.rs' → 27,450; '*.swift' → 11,999 (2026-09-11)"
+        },
+        {
           "label": ".als → typed AST",
-          "value": "1,306 LOC parser",
-          "source": "dawgit: dawgit-daemon/src/parsers/ableton.rs"
+          "value": "1,443 LOC parser",
+          "source": "armed: armed-daemon/src/parsers/ableton.rs (2026-09-11)"
         },
         {
           "label": "Semantic diff",
-          "value": "21 delta variants",
-          "source": "dawgit: dawgit-daemon/src/differ.rs + models.rs:139"
+          "value": "22 delta variants",
+          "source": "armed: armed-daemon/src/models.rs:149 (enum SemanticDelta) (2026-09-11)"
+        },
+        {
+          "label": "Byte-splice merge",
+          "value": "6,017 LOC engine",
+          "source": "armed: armed-daemon/src/splice.rs (2026-09-11)"
         },
         {
           "label": "Per-file branch commit",
           "value": "HEAD/index untouched",
-          "source": "dawgit: dawgit-daemon/src/git/mod.rs:211"
-        },
-        {
-          "label": "Audio LFS",
-          "value": "SHA-256 content-addressed",
-          "source": "dawgit: dawgit-daemon/src/git/lfs.rs:78"
+          "source": "armed: armed-daemon/src/git/mod.rs:283 (commit_file_to_branch) (2026-09-11)"
         },
         {
           "label": "Tests",
-          "value": "52 tests",
-          "source": "cargo test -p dawgit-daemon"
+          "value": "257 daemon tests",
+          "source": "armed: grep -rE '#[test]|#[tokio::test]' armed-daemon/src armed-daemon/tests (2026-09-11)"
+        },
+        {
+          "label": "Merge fuzz soak",
+          "value": "2,160 cases, 0 CRITICAL",
+          "source": "armed: docs/devlog/2026-08-24-fifth-reading.md:31 — 115 real .als sets, 36 songs (2026-09-11)"
+        },
+        {
+          "label": "Build state",
+          "value": "0.2.8, unpublished",
+          "source": "armed: armed-app/project.yml:39 + armed-website/lib/release.ts:8 (2026-09-11)"
         }
       ],
-      "role": "Sole author. Built the three-binary system end to end — Rust daemon (FS watcher, async/sync IPC boundary, git object layer, LFS, project discovery, launchd integration), the 1,306-LOC Ableton gzip-XML parser, the semantic differ, the clap CLI, and the SwiftUI menubar app that talks to the daemon over the socket.",
+      "role": "Sole author. Built the whole system end to end — the Rust daemon (FS watcher, async/sync IPC boundary, git object layer, per-song ref namespaces, project discovery, launchd integration), the 1,443-LOC Ableton gzip-XML parser, the semantic differ, the 6k-LOC byte-splice merge engine and its corpus fuzzer, the clap CLI, the SwiftUI menubar app and standalone window, the signed/notarised release pipeline, and the static marketing site.",
       "status": "working",
       "repo": {
         "kind": "private"
@@ -401,7 +445,7 @@
     },
     {
       "title": "FSAI Driverless Racing Simulator",
-      "tagline": "Architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 adaptive sub-stepping over three CommonRoad models (7/9/29 state), an OpenGL stereo camera (PBO readback), and ns-budget timing across a software CAN bus. On an 11-person Formula Student AI team I wrote the physics, IO, CAN, and infra; perception by teammates.",
+      "tagline": "Architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 adaptive sub-stepping over three CommonRoad models (7/9/29 state), an OpenGL stereo camera with PBO readback, and a software CAN bus to a separate VCU process. On an 11-person Formula Student AI team I wrote the physics, IO, CAN and infra; perception by teammates.",
       "order": 9,
       "section": "motorsport",
       "lineage": [
@@ -428,26 +472,26 @@
         {
           "label": "Codebase",
           "value": "~29k LOC (of 34k)",
-          "source": "git ls-files excl third_party + git blame, 2026-05"
+          "source": "fsai-sim: git ls-files C/C++ excl third_party = 34,148; git log --numstat net +29,377 lines mine, 2026-09-11"
         },
         {
           "label": "Vehicle dynamics",
           "value": "RK4, 3 models (7–29 state)",
-          "source": "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60"
+          "source": "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:20-58, checked 2026-09-11"
         },
         {
           "label": "Stereo camera",
           "value": "PBO readback + ring buffer",
-          "source": "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75"
+          "source": "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75, checked 2026-09-11"
         },
         {
           "label": "Real-time budgets",
           "value": "ns clock, 4 subsystems",
-          "source": "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915"
+          "source": "fsai-sim: common/include/common/time/budget.h:10-13, sim/app/fsai_run.cpp:1909-1916, checked 2026-09-11"
         }
       ],
       "role": "Architect and sole author of the simulation engine (~29k of 34k LOC). Designed and wrote the velox physics core (RK4 + adaptive sub-stepping, all three CommonRoad vehicle models), the sim loop, the OpenGL FBO stereo camera with PBO readback, the AI-to-VCU CAN interface and UDP S-VCU link, the ns-budget timing + swappable-clock infrastructure, and all common/IO/control libraries. 11-person team project; the ONNX/SIFT/Kalman perception pipeline was teammates' work — it plugs into the camera and pose feeds I built.",
-      "status": "working",
+      "status": "archived",
       "repo": {
         "kind": "public",
         "url": "https://github.com/RandevRanjit/FSAI-Simulation-C"
@@ -455,8 +499,8 @@
       "dates": "2025"
     },
     {
-      "title": "CommonRoad C++ Port",
-      "tagline": "~10.6k LOC C++20 port of the CommonRoad vehicle models (ST / STD / MB) into a static library, derivative outputs matched bit-for-bit against the Python reference to 1e-13, plus a ~4.5k LOC TypeScript SDK whose JS backend is parity-checked field-by-field against the native one.",
+      "title": "velox — CommonRoad C++ Port",
+      "tagline": "~10.6k LOC C++20 port of the CommonRoad vehicle models (ST / STD / MB) into a reusable static library, `velox`, behind one daemon-style API — derivative outputs matched against the Python reference to 1e-13, plus a ~4.5k LOC TypeScript SDK whose JS backend is parity-checked field-by-field against the native one.",
       "order": 10,
       "section": "motorsport",
       "lineage": [
@@ -473,6 +517,7 @@
         "C++20",
         "CMake",
         "TypeScript",
+        "Python",
         "YAML",
         "SDL2/ImGui"
       ],
@@ -480,26 +525,26 @@
         {
           "label": "Codebase",
           "value": "~10.6k LOC C++",
-          "source": "commonroad: wc -l over lib/app/examples/tests/parameters (10,642) and web-sdk *.ts (4,491)"
+          "source": "velox: wc -l over lib/app/examples/tests/parameters = 10,642, and web-sdk *.ts = 4,491, re-measured 2026-09-11"
         },
         {
           "label": "Selectable models",
           "value": "ST / STD / MB (29-state)",
-          "source": "commonroad: lib/simulation/model_timing.hpp:9-13, lib/models/vehiclemodels/src/vehicle_dynamics_mb.cpp:20"
+          "source": "velox: lib/simulation/model_timing.hpp:9-13, lib/models/vehiclemodels/src/vehicle_dynamics_mb.cpp:20, checked 2026-09-11"
         },
         {
           "label": "Derivative parity vs Python",
           "value": "ST/STD 1e-13, MB 1e-7",
-          "source": "commonroad: tests/test_derivatives.cpp:84,114,184"
+          "source": "velox: tests/test_derivatives.cpp:84,114,184, checked 2026-09-11"
         },
         {
           "label": "Test suite",
           "value": "19 CTest targets",
-          "source": "commonroad: CMakeLists.txt add_test x19; tests/test_*.cpp+py count=19"
+          "source": "velox: grep -c add_test CMakeLists.txt = 19; tests/test_*.cpp+py = 19 files, re-measured 2026-09-11"
         }
       ],
       "role": "Sole author. Ported the CommonRoad ST/STD/MB vehicle models from the academic Python reference to a C++20 static library (`velox`), built the `SimulationDaemon` API with a `ModelTiming` sub-step scheduler, Pacejka tyre model, EV powertrain controller, staged low-speed/loss-of-control safety, and a TypeScript web SDK with a JS backend parity-checked against the native one.",
-      "status": "working",
+      "status": "archived",
       "repo": {
         "kind": "public",
         "url": "https://github.com/RandevRanjit/CommonRoad-CXX-Port"
@@ -525,22 +570,22 @@
         {
           "label": "Diffraction model",
           "value": "sinc² Fraunhofer, GPU",
-          "source": "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14"
+          "source": "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14 (re-read 2026-09-11)"
         },
         {
           "label": "Shader programs",
-          "value": "3 shader programs",
-          "source": "slit-sim: src/shaders/*.glsl"
+          "value": "3 programs, 6 files",
+          "source": "slit-sim: wc -l src/shaders/*.glsl → 6 files, 147 lines (2026-09-11)"
         },
         {
           "label": "Engine",
           "value": "~1.65k LOC",
-          "source": "slit-sim: src/script.js (wc -l = 1654)"
+          "source": "slit-sim: wc -l src/script.js = 1654 (re-measured 2026-09-11)"
         },
         {
           "label": "Wavelength→colour",
           "value": "380–780 nm CIE→RGB",
-          "source": "slit-sim: src/script.js:204-274 (nm_to_rgb)"
+          "source": "slit-sim: src/script.js:204 (nm_to_rgb, Fourmilab specrend) — re-checked 2026-09-11"
         }
       ],
       "role": "Sole author. Wrote the interference vertex/fragment shader pair (sinc² envelope, SI-unit parametrisation), the wavelength→RGB conversion, the full Three.js scene graph, the draggable transform-controlled apparatus, the live measurement panel, and the particle-haze system with its sorted exponential-search culling.",
@@ -574,27 +619,27 @@
         {
           "label": "Catalog (prototype)",
           "value": "314 parts",
-          "source": "carrlane: backend/data/alignment_pins.json (314 part_no records)"
+          "source": "carrlane: backend/data/alignment_pins.json = 314 part_no records; backend/alignment.db part table = 314 rows, 11 product types (2026-09-11)"
         },
         {
           "label": "Company catalog",
           "value": "10,000+ parts",
-          "source": "CV (Randev_Ranjit FPGA-Trading-CV)"
+          "source": "CV (Randev_Ranjit FPGA-Trading-CV) — company figure, not measurable from the repo (re-checked 2026-09-11)"
         },
         {
           "label": "LLM tools",
           "value": "9 typed function schemas",
-          "source": "carrlane: orchestrator/functions.js:4-112"
+          "source": "carrlane: orchestrator/functions.js:4-112, functionDefinitions array (2026-09-11)"
         },
         {
           "label": "API tests",
           "value": "8 async endpoint tests",
-          "source": "carrlane: backend/test/test_api.py"
+          "source": "carrlane: backend/test/test_api.py, def test_ count = 8 (2026-09-11)"
         },
         {
           "label": "Dates",
           "value": "Jun–Aug 2025, Chennai",
-          "source": "CV (AI / Software Engineering Intern)"
+          "source": "CV (AI / Software Engineering Intern); last repo commit 2025-08-05, unchanged since (2026-09-11)"
         }
       ],
       "role": "AI / Software Engineering Intern. Built the catalog ingestion, the typed REST API over it, and the function-calling orchestration layer that maps natural-language queries to catalog lookups.",
@@ -606,7 +651,7 @@
     },
     {
       "title": "AUBRY — Autonomous Cinematography Drone",
-      "tagline": "A camera drone that follows a subject and frames the shot itself — a \"follow & react\" trailing controller and a \"cinematic framing\" controller with potential-field obstacle avoidance and a decoupled virtual gimbal, built on the aero-lab racing stack's inner loop.",
+      "tagline": "A camera drone that trails you, leads you and frames the shot itself, answers with a nod or a shake, and decides between those behaviours on its own — four controllers with potential-field obstacle avoidance and a decoupled virtual gimbal, all riding the aero-lab racing stack's inner loop untouched.",
       "order": 13,
       "section": "drones",
       "lineage": [
@@ -621,31 +666,37 @@
       "stack": [
         "Python",
         "NumPy",
+        "SciPy",
         "VisPy"
       ],
       "metrics": [
         {
           "label": "Controllers",
-          "value": "2 cinematic",
-          "source": "aero-lab: aubry/follow_controller.py (AUBRYFollowController), aubry/framing_controller.py (AUBRYFramingController)"
+          "value": "4 cinematic",
+          "source": "aero-lab: src/aerolab/controllers/factory.py:65-68 — aubry_follow, aubry_frame, aubry_gesture, aubry_companion (2026-09-11)"
         },
         {
           "label": "Source",
-          "value": "470 LOC",
-          "source": "aero-lab: wc -l src/aerolab/controllers/aubry/*.py → 470 total"
+          "value": "981 LOC",
+          "source": "aero-lab: wc -l src/aerolab/controllers/aubry/*.py → 981 total across 7 modules (2026-09-11)"
+        },
+        {
+          "label": "Tests",
+          "value": "56 AUBRY tests",
+          "source": "aero-lab: grep -rc 'def test_' tests/controllers/aubry → 56 across 9 files, incl. the T-AUBRY-1…4 smokes (2026-09-11)"
         },
         {
           "label": "Obstacle avoidance",
           "value": "APF + 4-pass detour",
-          "source": "aero-lab: aubry/obstacles.py:51 (repulsion()), aubry/trail.py:21 (_DETOUR_PASSES=4), trail.py:81 (detour loop)"
+          "source": "aero-lab: aubry/obstacles.py:51 (repulsion()), aubry/trail.py:21 (_DETOUR_PASSES=4), trail.py:81 (detour loop) — verified 2026-09-11"
         },
         {
           "label": "Inner loop",
           "value": "shared, RRHC untouched",
-          "source": "aero-lab: aubry/follow_controller.py:20,110 + framing_controller.py:20,94 → accel_yaw_to_motor_speeds(); follow_controller.py:6 docstring confirms RRHC unmodified"
+          "source": "aero-lab: aubry/follow_controller.py:20,110 + framing_controller.py:20,94 → accel_yaw_to_motor_speeds(); follow_controller.py:6 docstring confirms RRHC unmodified (2026-09-11)"
         }
       ],
-      "role": "Sole author. Designed both cinematic controllers on top of the existing quadrotor stack — a trailing controller that keeps a target arc-length gap behind a moving subject via a rolling breadcrumb spline with iterative obstacle-detour resampling, and a framing controller that holds a relative-pose \"front selfie\" target with artificial-potential-field repulsion and a decoupled virtual gimbal whose look-at is computed in the runner layer independently of the airframe attitude. Both reuse the shared differential-flatness inner loop without touching RRHC.",
+      "role": "Sole author. Designed four cinematic controllers on top of the existing quadrotor stack — a trailing controller that keeps a target arc-length gap behind a moving subject via a rolling breadcrumb spline with iterative obstacle-detour resampling; a framing controller that leads the subject in a relative-pose \"front selfie\" with artificial-potential-field repulsion and a decoupled virtual gimbal computed in the runner layer; a gesture controller that perturbs a hover reference into nod/shake/bob/pirouette primitives; and a companion arbiter that picks between come, watch, follow and hover from scripted stimuli, gluing a gesture onto each transition. All four reuse the shared differential-flatness inner loop without touching RRHC.",
       "status": "working",
       "repo": {
         "kind": "private"
@@ -669,22 +720,22 @@
         {
           "label": "Growth model",
           "value": "resource-flow + area",
-          "source": "proce-tree: src/tree.js:52-90 (grow / pass ratio)"
+          "source": "proce-tree: src/tree.js:52-89 (grow), :77-79 (area-conserving pass ratio) — re-read 2026-09-11"
         },
         {
           "label": "Branch steering",
           "value": "canopy-density avoidance",
-          "source": "proce-tree: src/tree.js:140-179 (leafdensity)"
+          "source": "proce-tree: src/tree.js:140-179 (leafdensity), :116 (call site) — re-read 2026-09-11"
         },
         {
           "label": "Leaves",
           "value": "instanced billboards",
-          "source": "proce-tree: src/main.js:169-188 (InstancedMesh)"
+          "source": "proce-tree: src/main.js:163-187 (InstancedMesh) + src/tree.js:251-266 (billboard matrices) — 2026-09-11"
         },
         {
           "label": "Engine",
           "value": "~520 LOC",
-          "source": "proce-tree: wc -l src/*.js = 519"
+          "source": "proce-tree: wc -l src/*.js = 519 (main 196, tree 277, tester 46) — re-measured 2026-09-11"
         }
       ],
       "role": "Sole author. Designed the growth algorithm — a binary-splitting branch model fed by a \"growth resource\" that is consumed in proportion to cross-sectional area and conserved across each fork, with branches that compute a weighted-average canopy position and grow *away* from it — plus the Three.js scene, the per-frame branch geometry, and the camera-facing instanced leaf billboards.",
@@ -697,7 +748,7 @@
     },
     {
       "title": "FSAI Unity Driving Simulator",
-      "tagline": "An earlier Unity/C# Formula Student driving sim — procedurally-generated cone circuits via complex Fourier synthesis with curvature-bounded corners, a dynamic bicycle model (Pacejka tyre + low-speed kinematic blend), driven autonomously by a lookahead path-follower with live telemetry.",
+      "tagline": "An earlier Unity/C# Formula Student driving sim — procedurally-generated cone circuits via complex Fourier synthesis, rescaled until the tightest corner clears a minimum radius; a dynamic bicycle model (Pacejka tyre, kinematic blend through standstill) driven autonomously by a dual-lookahead path-follower with live telemetry.",
       "order": 15,
       "section": "motorsport",
       "lineage": [
@@ -719,30 +770,30 @@
         {
           "label": "Tyre model",
           "value": "Pacejka magic formula",
-          "source": "fsai-unity: Assets/SimulationModels/DynamicBicycleModel/DynamicBicycle.cs:114-125"
+          "source": "fsai-unity: Assets/SimulationModels/DynamicBicycleModel/DynamicBicycle.cs:114-125, checked 2026-09-11"
         },
         {
           "label": "Track generation",
           "value": "complex Fourier synthesis",
-          "source": "fsai-unity: Assets/PathLogic/PathGenerator.cs:58-90"
+          "source": "fsai-unity: Assets/PathLogic/PathGenerator.cs:58-90, radius rescale at :159-171, checked 2026-09-11"
         },
         {
           "label": "Low-speed model",
-          "value": "kinematic blend",
-          "source": "fsai-unity: DynamicBicycle.cs:74-90"
+          "value": "kinematic blend ≤3.5 m/s",
+          "source": "fsai-unity: DynamicBicycle.cs:74-90, checked 2026-09-11"
         },
         {
           "label": "C# engine",
           "value": "~2.6k LOC",
-          "source": "fsai-unity: wc -l Assets custom *.cs = 2619"
+          "source": "fsai-unity: wc -l over 16 hand-written Assets/*.cs (vendored YamlDotNet excluded) = 2,619, re-measured 2026-09-11"
         }
       ],
-      "role": "Sole author (Formula Student). Wrote the dynamic bicycle vehicle model (Pacejka tyre, aero down/drag-force, low-speed kinematic correction), the procedural cone-track generator (a complex-Fourier path with curvature-derived corner radii and a minimum-radius constraint), the autonomous lookahead path-following controller, and the real-time telemetry + CSV logging — all C# on Unity 6.",
-      "status": "case-study",
+      "role": "Sole author (Formula Student). Wrote the dynamic bicycle vehicle model (Pacejka tyre, aero down/drag-force, low-speed kinematic correction), the procedural cone-track generator (a complex-Fourier path with curvature-derived corner radii and a minimum-radius rescale), the autonomous lookahead path-following controller, and the real-time telemetry + CSV logging — all C# on Unity 6 (6000.0.22f1).",
+      "status": "archived",
       "repo": {
         "kind": "private"
       },
-      "dates": "2025"
+      "dates": "2024–25"
     }
   ]
 }

@@ -6,11 +6,11 @@ section: other
 buckets: [systems]
 stack: [Python, FastAPI, SQLModel, "Node/Express", React, "Chakra UI", "OpenAI function-calling", BeautifulSoup, SQLite]
 metrics:
-  - { label: "Catalog (prototype)", value: "314 parts", source: "carrlane: backend/data/alignment_pins.json (314 part_no records)" }
-  - { label: "Company catalog", value: "10,000+ parts", source: "CV (Randev_Ranjit FPGA-Trading-CV)" }
-  - { label: "LLM tools", value: "9 typed function schemas", source: "carrlane: orchestrator/functions.js:4-112" }
-  - { label: "API tests", value: "8 async endpoint tests", source: "carrlane: backend/test/test_api.py" }
-  - { label: "Dates", value: "Jun–Aug 2025, Chennai", source: "CV (AI / Software Engineering Intern)" }
+  - { label: "Catalog (prototype)", value: "314 parts", source: "carrlane: backend/data/alignment_pins.json = 314 part_no records; backend/alignment.db part table = 314 rows, 11 product types (2026-09-11)" }
+  - { label: "Company catalog", value: "10,000+ parts", source: "CV (Randev_Ranjit FPGA-Trading-CV) — company figure, not measurable from the repo (re-checked 2026-09-11)" }
+  - { label: "LLM tools", value: "9 typed function schemas", source: "carrlane: orchestrator/functions.js:4-112, functionDefinitions array (2026-09-11)" }
+  - { label: "API tests", value: "8 async endpoint tests", source: "carrlane: backend/test/test_api.py, def test_ count = 8 (2026-09-11)" }
+  - { label: "Dates", value: "Jun–Aug 2025, Chennai", source: "CV (AI / Software Engineering Intern); last repo commit 2025-08-05, unchanged since (2026-09-11)" }
 role: AI / Software Engineering Intern. Built the catalog ingestion, the typed REST API over it, and the function-calling orchestration layer that maps natural-language queries to catalog lookups.
 status: working
 repo: { kind: private }
@@ -105,7 +105,7 @@ The model speaks in human titles ("L Pins T Pins And Jig Pins"); the API speaks 
 
 The catalog was scraped from carrlane.com with BeautifulSoup (`scraper/data_ingestion/scraper.py`), parsing the spec tables out of the live product pages. Real engineering data is hostile to numeric comparison. Two problems dominated:
 
-- **Imperial fractions as strings.** Dimensions come through as `"3/16"`, `"2-1/2"`, `".1875"`. The committed prototype has **1,634** such fractional spec values. You cannot `min`/`max` those as text. `parse_spec_value` (`backend/app/crud.py`) parses simple fractions like `"3/16"` through Python's `Fraction` so aggregation works for them. Mixed-number values like `"2-1/2"` are not handled (the code attempts `replace('-', ' ')` to get `"2 1/2"` but `Fraction` rejects that form, so they silently return `None` and are excluded from aggregation).
+- **Imperial fractions as strings.** Dimensions come through as `"3/16"`, `"2-1/2"`, `".1875"`. The committed prototype has **1,133** spec values carrying a fraction. You cannot `min`/`max` those as text. `parse_spec_value` (`backend/app/crud.py`) puts the 772 plain `n/d` values through Python's `Fraction`, so the FastAPI aggregate endpoint gets those right. The remaining 361 are silently dropped: 322 mixed numbers like `"2-1/2"` (the code does `replace('-', ' ')` to get `"2 1/2"`, `Fraction` rejects that form, so it returns `None`) and 39 oddities like the thread spec `"5/16-18"`. And the LLM-facing path never reaches that parser at all — `getSpecStats` in the orchestrator does its own `parseFloat(raw)` in JavaScript, where `parseFloat("3/16")` is `3`.
 - **Inconsistent spec keys.** The same physical dimension shows up as `"A DIA NOMINAL"`, `"A DIA NOMINAL (mm)"`, `"A DIA ACTUAL +0/-.0010"` across types. The scraper tooling (`scraper/output/add_alias.py`) and the JSON catalog store a per-type alias array mapping friendly names to real spec keys, but the `getSpecStats` orchestrator function looks for them in a tab titled `"alias"` within the product type's `info` array (no such tab exists in the scraped data; the actual tabs are `"Product Information"`, `"Application Information"`, `"Material"`, etc.), so the alias resolution is currently a dead branch: `specKey` passes through unchanged.
 
 This is the unglamorous part that makes the answer correct instead of plausible.

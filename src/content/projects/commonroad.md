@@ -1,19 +1,19 @@
 ---
-title: CommonRoad C++ Port
-tagline: ~10.6k LOC C++20 port of the CommonRoad vehicle models (ST / STD / MB) into a static library, derivative outputs matched bit-for-bit against the Python reference to 1e-13, plus a ~4.5k LOC TypeScript SDK whose JS backend is parity-checked field-by-field against the native one.
+title: velox — CommonRoad C++ Port
+tagline: ~10.6k LOC C++20 port of the CommonRoad vehicle models (ST / STD / MB) into a reusable static library, `velox`, behind one daemon-style API — derivative outputs matched against the Python reference to 1e-13, plus a ~4.5k LOC TypeScript SDK whose JS backend is parity-checked field-by-field against the native one.
 order: 10
 section: motorsport
 lineage:
   - { note: "velox is embedded into the FSAI driverless stack as its physics core", slug: fsai-sim }
 buckets: [systems, control]
-stack: ["C++20", CMake, TypeScript, YAML, "SDL2/ImGui"]
+stack: ["C++20", CMake, TypeScript, Python, YAML, "SDL2/ImGui"]
 metrics:
-  - { label: "Codebase", value: "~10.6k LOC C++", source: "commonroad: wc -l over lib/app/examples/tests/parameters (10,642) and web-sdk *.ts (4,491)" }
-  - { label: "Selectable models", value: "ST / STD / MB (29-state)", source: "commonroad: lib/simulation/model_timing.hpp:9-13, lib/models/vehiclemodels/src/vehicle_dynamics_mb.cpp:20" }
-  - { label: "Derivative parity vs Python", value: "ST/STD 1e-13, MB 1e-7", source: "commonroad: tests/test_derivatives.cpp:84,114,184" }
-  - { label: "Test suite", value: "19 CTest targets", source: "commonroad: CMakeLists.txt add_test x19; tests/test_*.cpp+py count=19" }
+  - { label: "Codebase", value: "~10.6k LOC C++", source: "velox: wc -l over lib/app/examples/tests/parameters = 10,642, and web-sdk *.ts = 4,491, re-measured 2026-09-11" }
+  - { label: "Selectable models", value: "ST / STD / MB (29-state)", source: "velox: lib/simulation/model_timing.hpp:9-13, lib/models/vehiclemodels/src/vehicle_dynamics_mb.cpp:20, checked 2026-09-11" }
+  - { label: "Derivative parity vs Python", value: "ST/STD 1e-13, MB 1e-7", source: "velox: tests/test_derivatives.cpp:84,114,184, checked 2026-09-11" }
+  - { label: "Test suite", value: "19 CTest targets", source: "velox: grep -c add_test CMakeLists.txt = 19; tests/test_*.cpp+py = 19 files, re-measured 2026-09-11" }
 role: Sole author. Ported the CommonRoad ST/STD/MB vehicle models from the academic Python reference to a C++20 static library (`velox`), built the `SimulationDaemon` API with a `ModelTiming` sub-step scheduler, Pacejka tyre model, EV powertrain controller, staged low-speed/loss-of-control safety, and a TypeScript web SDK with a JS backend parity-checked against the native one.
-status: working
+status: archived
 repo: { kind: public, url: "https://github.com/RandevRanjit/CommonRoad-CXX-Port" }
 dates: "2025"
 ---
@@ -22,10 +22,17 @@ A C++20 port of the CommonRoad vehicle-dynamics library into a reusable static l
 exposed through a single `SimulationDaemon` API and then re-implemented in TypeScript. The ported
 maths is checked numerically against the original Python at every layer.
 
+The packaging is the point as much as the port is. The build produces `velox` — a static library
+containing the daemon, controllers, telemetry and utility code — and everything else in the repo
+(the SDL2/ImGui viewer, the `basic_sim_daemon` sample, the `drift_mode_demo` headless check) is a
+*consumer* of that library rather than part of it. That is what lets the same physics drop into
+the FSAI driverless stack and into a browser without being rewritten.
+
 ## What was actually ported
 
-CommonRoad ships its vehicle models as academic Python. I ported the three selectable models into
-C++20 (`ModelType{ST, STD, MB}`):
+CommonRoad ships its vehicle models as academic Python — a copy of which lives in `PYTHON/`
+alongside the port, so the reference and the port can be diffed. I ported the three selectable
+models into C++20 (`ModelType{ST, STD, MB}`):
 
 - **ST** — dynamic single-track, 7 states. A linearised bicycle whose cornering stiffnesses
   `C_Sf/C_Sr` are derived from the tyre's Pacejka coefficients.
@@ -45,7 +52,7 @@ speed (see below).
 
 `tests/test_derivatives.cpp` is the spine of the port. It feeds fixed states and inputs into the
 C++ ST, STD, and MB derivative functions and compares each output element against the ground-truth
-vectors copied from the Python unit tests:
+vectors transcribed from the reference Python unit tests (`PYTHON/unit_tests/test_derivatives.py`):
 
 - **ST and STD agree to `1e-13`**, effectively bit-for-bit with the reference.
 - **MB agrees to `1e-7`** across all 29 derivative components. The looser bound is accumulated
@@ -63,9 +70,9 @@ MB   (29 states)  #######         7   (tol 1e-7)
 *Fig. 1 — derivative parity per model, from the tolerances asserted in tests/test_derivatives.cpp.*
 
 That is the claim the whole project rests on: the C++ isn't "close to" the academic model, it
-*is* the academic model. 19 test files and 19 CTest targets back it: derivatives, zero-velocity
-edge cases, timestep bounds, the steering controller, low-speed safety, and the loss-of-control
-detector.
+*is* the academic model. 19 test files and 19 CTest targets back it — derivatives, zero-velocity
+edge cases, timestep bounds, the steering controller, low-speed safety, telemetry population and
+drift toggling, plus a cross-language scenario-consistency check driven from Python.
 
 ## The near-zero-speed singularity
 
@@ -82,7 +89,9 @@ miss this and produce NaNs the moment the vehicle stops.
 Everything sits behind one `SimulationDaemon`: it owns the chosen model, the steering and
 longitudinal controllers, the safety system, and the integrator, and exposes `step(UserInput) →
 SimulationTelemetry`. Callers pass whatever `dt` their frame loop produces; the daemon decides how
-to integrate it.
+to integrate it. `reset(ResetParams)` swaps models or vehicles in place while preserving the
+configured parameter roots, so a host can switch from a 7-state to a 29-state model at runtime
+without tearing anything down.
 
 That decision is `ModelTiming::plan_steps`. Each model declares a `max_dt`. A requested step larger
 than that is split into N equal sub-steps, so the integrator never takes a stride wide enough to go
@@ -162,8 +171,20 @@ telemetry) behind two interchangeable backends: a pure-JS `JsSimulationBackend` 
 the native C++ build. `tools/compareNative.ts` drives both through the same scenario fixtures,
 flattens every telemetry field, and reports per-field RMSE and max-abs-diff against configurable
 tolerances, flagging any field that drifts past its bound. So the port's correctness isn't
-asserted once at the bottom. It's measured across the language boundary too.
+asserted once at the bottom. It's measured across the language boundary too. That SDK is the
+version that ended up embedded in a browser playground for the racing-controller write-up.
 
 _The transferable skill: reading a non-trivial academic codebase, porting it faithfully, and
 proving numerically, against the source, that the port behaves identically. Twice, in two
 languages._
+
+## Honest scope
+
+Finished in November 2025 and not touched since — a completed library, not an active project.
+Two caveats on the test claim above: of the 19 CTest targets, two are not unit tests
+(`drift_mode_demo` is an example binary used as a headless CI check, `scenario_consistency` is a
+Python cross-check), and `tests/test_loss_of_control_detector.cpp` exists in the tree but is never
+registered with `add_test`, so it doesn't run in CI. There are no benchmark or timing numbers for
+the library — `kMinStableDt` is a stability bound, not a measured budget. And the TypeScript
+parity harness compares the JS backend against the native one; it does not re-run the Python
+reference, so the 1e-13 claim is anchored at the C++ layer only.

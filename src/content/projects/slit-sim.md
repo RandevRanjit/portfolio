@@ -6,10 +6,10 @@ section: other
 buckets: [graphics]
 stack: [JavaScript, "Three.js", GLSL, Tweakpane, Webpack]
 metrics:
-  - { label: "Diffraction model", value: "sinc² Fraunhofer, GPU", source: "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14" }
-  - { label: "Shader programs", value: "3 shader programs", source: "slit-sim: src/shaders/*.glsl" }
-  - { label: "Engine", value: "~1.65k LOC", source: "slit-sim: src/script.js (wc -l = 1654)" }
-  - { label: "Wavelength→colour", value: "380–780 nm CIE→RGB", source: "slit-sim: src/script.js:204-274 (nm_to_rgb)" }
+  - { label: "Diffraction model", value: "sinc² Fraunhofer, GPU", source: "slit-sim: src/shaders/interference_fragment.fs.glsl:13-14 (re-read 2026-09-11)" }
+  - { label: "Shader programs", value: "3 programs, 6 files", source: "slit-sim: wc -l src/shaders/*.glsl → 6 files, 147 lines (2026-09-11)" }
+  - { label: "Engine", value: "~1.65k LOC", source: "slit-sim: wc -l src/script.js = 1654 (re-measured 2026-09-11)" }
+  - { label: "Wavelength→colour", value: "380–780 nm CIE→RGB", source: "slit-sim: src/script.js:204 (nm_to_rgb, Fourmilab specrend) — re-checked 2026-09-11" }
 role: Sole author. Wrote the interference vertex/fragment shader pair (sinc² envelope, SI-unit parametrisation), the wavelength→RGB conversion, the full Three.js scene graph, the draggable transform-controlled apparatus, the live measurement panel, and the particle-haze system with its sorted exponential-search culling.
 status: working
 repo: { kind: public, url: "https://github.com/RandevRanjit/Slit-Light-Interference-Sim" }
@@ -87,12 +87,13 @@ project models exactly what its name claims and no more.
 
 **Honest limits.** `π` is hard-coded as `2.0 * 3.14`, a ~0.05% truncation that shifts fringe minima
 very slightly. Intensity is scaled (`× I₀` twice, `/100`) rather than normalised to a physical `I₀`,
-so the absolute brightness is presentational. And the model is small-angle Fraunhofer only — fine
-for the laser/slit geometry on screen, not a wide-angle or near-field solver.
+so the absolute brightness is presentational — and the fragment output is then `clamp`ed to [0,1],
+which flattens the central maximum at high intensity settings. And the model is small-angle
+Fraunhofer only — fine for the laser/slit geometry on screen, not a wide-angle or near-field solver.
 
 ## Beyond the shader
 
-Most of the engineering is in the ~1650-line Three.js engine, not the 18-line shader.
+Most of the engineering is in the 1,654-line Three.js engine, not the 18-line shader.
 
 ```text
  lines of code
@@ -128,13 +129,16 @@ What that engine actually does:
 ## Architecture & build
 
 Three shader programs total, across six GLSL files: the grid floor, the interference plane, and the
-animated loading overlay. Bundled with Webpack 5. A `raw-loader` rule pulls the `.glsl` files in as
-strings, `copy-webpack-plugin` ships the static GLTF/font assets, and the scene renders through an
-orthographic camera with Reinhard tone mapping. Stats.js panels overlay live FPS and frame-time.
+animated loading overlay. Bundled with Webpack 5 against Three.js r130. A `raw-loader` rule pulls
+the `.glsl` files in as strings (`bundler/webpack.common.js:64-67`), `copy-webpack-plugin` ships the
+static GLTF/font assets, and the scene renders through an orthographic camera
+(`src/script.js:476`) with Reinhard tone mapping at exposure 4 (`src/script.js:1592-1593`).
+Stats.js panels overlay live FPS and frame-time.
 
-This is early-coursework code and it shows its age honestly: one 1650-line file with no module
-split, a `stats.js` import wired to a hard-coded absolute path from the original machine, and dead
-`dat.gui`/`guify` dependencies left in `package.json` alongside the Tweakpane that actually drives
-the UI. But the part that matters for a physics simulator is right. The diffraction maths is the
-real Fraunhofer envelope in SI units, derived once and rendered per-fragment, not a lookup table or
-a faked gradient.
+This is early-coursework code and it shows its age honestly: one 1,654-line file with no module
+split, a `stats.js` import wired to a hard-coded absolute path from the original machine
+(`src/script.js:33`), and dead `dat.gui`/`guify` dependencies still in `package.json` — neither is
+imported anywhere — alongside the Tweakpane that actually drives the UI. The 2026 work was
+packaging only: a README, a licence and a `.gitignore`, no change to the simulation. But the part
+that matters for a physics simulator is right. The diffraction maths is the real Fraunhofer envelope
+in SI units, derived once and rendered per-fragment, not a lookup table or a faked gradient.

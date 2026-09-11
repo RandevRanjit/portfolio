@@ -1,6 +1,6 @@
 ---
 title: FSAI Driverless Racing Simulator
-tagline: Architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 adaptive sub-stepping over three CommonRoad models (7/9/29 state), an OpenGL stereo camera (PBO readback), and ns-budget timing across a software CAN bus. On an 11-person Formula Student AI team I wrote the physics, IO, CAN, and infra; perception by teammates.
+tagline: Architected and authored the simulation engine (~29k of 34k LOC C++) — RK4 adaptive sub-stepping over three CommonRoad models (7/9/29 state), an OpenGL stereo camera with PBO readback, and a software CAN bus to a separate VCU process. On an 11-person Formula Student AI team I wrote the physics, IO, CAN and infra; perception by teammates.
 order: 9
 section: motorsport
 lineage:
@@ -8,12 +8,12 @@ lineage:
 buckets: [systems, control]
 stack: ["C++17", CMake, Eigen, OpenGL, SDL2, ONNXRuntime, OpenCV, SocketCAN]
 metrics:
-  - { label: "Codebase", value: "~29k LOC (of 34k)", source: "git ls-files excl third_party + git blame, 2026-05" }
-  - { label: "Vehicle dynamics", value: "RK4, 3 models (7–29 state)", source: "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:21-60" }
-  - { label: "Stereo camera", value: "PBO readback + ring buffer", source: "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75" }
-  - { label: "Real-time budgets", value: "ns clock, 4 subsystems", source: "fsai-sim: common/include/common/time/budget.h, fsai_run.cpp:1909-1915" }
+  - { label: "Codebase", value: "~29k LOC (of 34k)", source: "fsai-sim: git ls-files C/C++ excl third_party = 34,148; git log --numstat net +29,377 lines mine, 2026-09-11" }
+  - { label: "Vehicle dynamics", value: "RK4, 3 models (7–29 state)", source: "fsai-sim: velox/lib/simulation/vehicle_simulator.cpp:43-90, model_timing.cpp:20-58, checked 2026-09-11" }
+  - { label: "Stereo camera", value: "PBO readback + ring buffer", source: "fsai-sim: io/camera/sim_stereo/readback_pbo.cpp:46-75, checked 2026-09-11" }
+  - { label: "Real-time budgets", value: "ns clock, 4 subsystems", source: "fsai-sim: common/include/common/time/budget.h:10-13, sim/app/fsai_run.cpp:1909-1916, checked 2026-09-11" }
 role: Architect and sole author of the simulation engine (~29k of 34k LOC). Designed and wrote the velox physics core (RK4 + adaptive sub-stepping, all three CommonRoad vehicle models), the sim loop, the OpenGL FBO stereo camera with PBO readback, the AI-to-VCU CAN interface and UDP S-VCU link, the ns-budget timing + swappable-clock infrastructure, and all common/IO/control libraries. 11-person team project; the ONNX/SIFT/Kalman perception pipeline was teammates' work — it plugs into the camera and pose feeds I built.
-status: working
+status: archived
 repo: { kind: public, url: "https://github.com/RandevRanjit/FSAI-Simulation-C" }
 dates: "2025"
 ---
@@ -26,6 +26,7 @@ IO layer (stereo camera, CAN and UDP transport), the common timing and clock inf
 and the software-CAN stack. Roughly **29k of the 34k lines**.
 This is an 11-person team project; the ONNX/SIFT/Kalman perception pipeline was a teammate's
 contribution, plugging into the camera and vehicle-pose feeds I built.
+Work on it finished in November 2025 — it is a completed deliverable, not an active branch.
 
 ## Vehicle dynamics: RK4 over three real models
 
@@ -40,7 +41,7 @@ different state dimension:
 - **STD** — single-track with drift dynamics, 9-state.
 - **MB** — full multi-body with suspension and load transfer, 29-state.
 
-Which one runs is a YAML field (`configs/vehicle/ads-dv.yaml: model: std`). No recompile.
+Which one runs is a YAML field (`configs/vehicle/ads-dv.yaml:76 — model: std`). No recompile.
 The simulator carries them behind one `ModelInterface` (init / dynamics / speed function
 pointers), so the same RK4 loop, the same safety latch, and the same timing code work
 unchanged whether you are integrating 7 states or 29.
@@ -105,8 +106,9 @@ render thread (mine)            vision thread (teammate)
 The perception pipeline that consumes those frames (a teammate's work) is a real one: ONNX
 YOLO cone detector with NMS and a per-track ID assigner, per-cone SIFT stereo matching under an
 epipolar constraint, triangulation, a constant-velocity Kalman filter, and a recursive-Bayesian
-landmark map. Which is exactly the point. The camera I wrote has to be good enough that a
-genuine detector locks onto it.
+landmark map. It is constructed and started by the sim app at run time
+(`sim/app/fsai_run.cpp:2107-2113`). Which is exactly the point: the camera I wrote has to be
+good enough that a genuine detector locks onto it.
 
 ## A software CAN bus to a separate VCU process
 
@@ -139,30 +141,36 @@ colouring in the GUI. That is the shape of the real bring-up problem.
 
 ## Real-time budget timing with a swappable clock
 
-Every subsystem runs against an explicit nanosecond budget.
+Every subsystem is *declared* against an explicit nanosecond budget.
 The timing infra (`common/time/budget.*`) is a C-ABI core with an RAII `ScopedBudgetTimer`
 (and typed `VisionStageTimer` / `ControlStageTimer` / etc.) designed to record last / worst / mean
 duration per subsystem and report against a configured budget.
 `fsai_run` configures four budgets at startup (Simulation Renderer, Planner + Controller,
-Vision Pipeline, CAN Dispatch) and stage timers wrap the hot paths. But
-`fsai_budget_stage_record` and `fsai_budget_report_all` are currently stubs: the scaffold is
-wired up, the data is not yet recorded or surfaced.
+Vision Pipeline, CAN Dispatch).
 Behind it sits a clock (`fsai_clock`) that runs in realtime or simulated mode. In simulated
 mode time is advanced explicitly, which is what makes deterministic replay possible.
-(The timers *measure and report* against budget; they don't pre-empt a stage that overruns.
-They tell you which one did.)
+The honest state of it is in the scope note below: the scaffold is wired, the numbers are not
+collected.
 
 ## Honest scope
 
-- The budget timers are scaffolded (configured, wired into hot paths) but do not yet profile or
-  warn: `fsai_budget_stage_record` is an unimplemented stub and `fsai_budget_report_all` is
-  declared in the header but has no implementation, so no overrun data is recorded or reported.
+- The budget accounting doesn't actually accumulate. The aggregate path
+  (`fsai_budget_record`, `common/src/time/budget.cpp:66`) *is* implemented and tracks
+  last/worst/total/sample-count, but every timer in the tree passes a stage name, which routes to
+  `fsai_budget_stage_record` (`budget.cpp:84`) — a function whose body validates its arguments
+  and then returns without writing anything. `fsai_budget_report_all` is declared in
+  `budget.h:23` and defined nowhere. And there are only two stage timers in the whole codebase
+  (`fsai_run.cpp:2659` around the world update, `WorldRenderAdapter.cpp:186` around the
+  renderer), so even a working recorder would cover two of the four configured subsystems.
+  Startup even says so out loud: it calls `fsai_budget_mark_unimplemented` for the Vision and
+  CAN budgets.
 - The PBO readback is single-buffered: it maps immediately after `glReadPixels` rather than
   ping-ponging across frames, so it doesn't hide readback latency the way a double-PBO scheme
   would. The decoupling that matters comes from the ring buffer + vision thread, not the PBO.
 - Testing is integration/bring-up harnesses, not a unit suite: the S-VCU loopback harness is
-  substantial (~800 lines, Linux-gated, real threads and sockets), but the track-generation
-  test has no assertions. Coverage is thin and uneven.
+  substantial (819 lines, Linux-gated behind `#if defined(__linux__)`, real threads and sockets),
+  but the track-generation test is 52 lines with zero assertions, and the two control tests are
+  41-line printf harnesses. Coverage is thin and uneven.
 - It is a team project. I led and wrote the engine; the perception stack and parts of the
   path/centerline planner are teammates' work. I've drawn that line explicitly above rather
   than claim the whole codebase.
