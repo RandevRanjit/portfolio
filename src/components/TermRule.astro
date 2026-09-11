@@ -1,28 +1,10 @@
 ---
-// src/components/TermRule.astro — terminal-style ASCII divider.
-// variant="full" (default): +==========+   variant="light": +----------+
-// Caps stay at the ends; the middle fill clips via overflow, so it spans any width.
+// src/components/TermRule.astro — hairline section divider.
+// variant="full" (default): ink hairline.   variant="light": muted hairline.
 const { variant = 'full' } = Astro.props as { variant?: 'full' | 'light' };
-const fill = variant === 'light'
-  ? '------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'
-  : '==================================================================================================================================================================================================================================================================================================================';
 ---
-<div class:list={['termrule', `termrule--${variant}`]} aria-hidden="true"><span class="termrule__cap">+</span><span class="termrule__fill">{fill}</span><span class="termrule__cap">+</span></div>
+<hr class:list={['rule', `rule--${variant}`]} aria-hidden="true" />
 <style>
-  .termrule {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    font-family: var(--font-mono);
-    color: var(--ink);
-    font-size: 0.85rem;
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    user-select: none;
-    margin: 0;
-  }
-  .termrule--light { color: var(--grey); font-size: 0.8rem; }
-  .termrule__cap { flex: 0 0 auto; }
-  .termrule__fill { flex: 1 1 auto; overflow: hidden; }
+  .rule { border: 0; border-top: 1px solid var(--ink); margin: 0; }
+  .rule--light { border-top-color: var(--line); }
 </style>

@@ -1,6 +1,6 @@
 export const site = {
   name: 'Randev Ranjit',
-  spine: 'Designed and engineered, artfully — silicon to software.',
+  spine: 'Designed and engineered, artfully. Silicon to software.',
   bsc: 'BSc Computer Science, University of Manchester (2023–2026)',
   msc: 'MSc Computer & Embedded Systems Engineering (CESE), TU Delft (Sept 2026–2028)',
   location: 'Manchester, UK',

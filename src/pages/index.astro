@@ -21,95 +21,131 @@ const work = (await getCollection('projects')).sort((a, b) => a.data.order - b.d
   <section class="reveal" style="padding-block:2rem 3rem;">
     <p class="section-num wrap">02 / ALL WORK</p>
     <div class="marquee">
-      <div class="marquee__track">
-        {[false, true].map((dupe) => (
-          <ul class="marquee__group" aria-label={dupe ? undefined : 'All projects'}
-            aria-hidden={dupe ? 'true' : undefined} inert={dupe}>
-            {work.map((p) => (
-              <li class="marquee__item">
-                <ProjectCard num={String(p.data.order).padStart(2, '0')} slug={p.id}
-                  title={p.data.title} tagline={p.data.tagline} stack={p.data.stack}
-                  repoKind={p.data.repo.kind} />
-              </li>
-            ))}
-          </ul>
+      <ul class="marquee__track" aria-label="All projects">
+        {work.map((p) => (
+          <li class="marquee__item">
+            <ProjectCard num={String(p.data.order).padStart(2, '0')} slug={p.id}
+              title={p.data.title} tagline={p.data.tagline} stack={p.data.stack}
+              repoKind={p.data.repo.kind} />
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
     <p class="wrap" style="margin-top:1.5rem;"><a href={withBase('quant')}>See all work by field →</a></p>
   </section>
 </BaseLayout>
 <script>
-  // Marquee runtime — rAF-driven scrollLeft with a seamless wrap at one group
-  // width. A real scroll container tiles like normal content in every engine;
-  // the previous CSS transform animated a ~10k-px composited layer, which
-  // WebKit only partially rasterises (cards "run out" mid-loop, then blank).
-  const SPEED = 36; // px/s — same pace as the shipped 150s / 15-card loop
+  // Marquee runtime — the track is a ring of cards. It is translated left by
+  // `offset`; once the leading card has fully left the viewport it is moved to
+  // the END of the track and `offset` drops by one stride. Nothing is
+  // duplicated and nothing can run out: the DOM itself is the loop, and the
+  // track never grows beyond one set of cards (cloned only when the window is
+  // wider than the whole set), so no engine has to rasterise a huge layer —
+  // the CSS-animation and scrollLeft versions both died mid-loop in WebKit.
+  const SPEED = 36; // px/s
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const noHover = matchMedia('(hover: none)');
 
   document.querySelectorAll<HTMLElement>('.marquee').forEach((m) => {
-    const group = m.querySelector<HTMLElement>('.marquee__group:not([aria-hidden])');
-    if (!group) return;
+    const found = m.querySelector<HTMLElement>('.marquee__track');
+    if (!found || found.children.length < 2) return;
+    const track: HTMLElement = found;
 
-    let raf = 0, last = 0, pos = 0;
+    let raf = 0, last = 0, offset = 0;
     let hovered = false, focused = false, inView = false;
     const allowed = () => !reduced.matches && !noHover.matches;
+    const live = () => m.classList.contains('marquee--live');
+    const first = () => track.firstElementChild as HTMLElement;
+    const stride = () => (track.children[1] as HTMLElement).offsetLeft - first().offsetLeft;
+    const place = () => { track.style.transform = `translateX(${-offset}px)`; };
+    // right edge of the last card — NOT track.offsetWidth: WebKit sizes a
+    // max-content flex container from the cards' ASCII-art intrinsic width,
+    // ~5× the real row (that blank tail was the old "cards run out" bug)
+    const extent = () => {
+      const l = track.lastElementChild as HTMLElement;
+      return l.offsetLeft + l.offsetWidth;
+    };
+
+    // The ring must span the viewport plus one recycled card. Only an
+    // ultrawide window is wider than the whole set; clone the set then.
+    function cover() {
+      let guard = 0;
+      while (extent() < m.clientWidth + 2 * stride() && guard++ < 3) {
+        for (const li of Array.from(track.children)) {
+          const c = li.cloneNode(true) as HTMLElement;
+          c.setAttribute('aria-hidden', 'true');
+          c.inert = true;
+          track.appendChild(c);
+        }
+      }
+    }
 
     function step(now: number) {
       raf = 0;
       if (hovered || focused || !inView || !allowed()) return;
       const dt = Math.min(now - last, 100); // clamp background-tab jumps
       last = now;
-      // resync if the user (or focus scroll-into-view) moved the scroller
-      if (Math.abs(m.scrollLeft - pos) > 1) pos = m.scrollLeft;
-      pos += SPEED * dt / 1000;
-      const wrap = group!.getBoundingClientRect().width;
-      if (pos >= wrap) pos -= wrap;
-      m.scrollLeft = pos;
+      offset += SPEED * dt / 1000;
+      // recycle every card that has fully scrolled off the left edge
+      for (let s = stride(); s > 0 && offset >= s; s = stride()) {
+        offset -= s;
+        track.appendChild(first());
+      }
+      place();
       raf = requestAnimationFrame(step);
     }
     function schedule() {
       if (raf || hovered || focused || !inView || !allowed()) return;
+      m.classList.add('marquee--live');
+      cover();
       last = performance.now();
       raf = requestAnimationFrame(step);
+    }
+    // reduced-motion / touch: a plain swipeable row, no JS motion
+    function sync() {
+      if (allowed()) { schedule(); return; }
+      m.classList.remove('marquee--live');
+      offset = 0;
+      place();
     }
 
     m.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovered = true; });
     m.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hovered = false; schedule(); } });
     m.addEventListener('focusin', (e) => {
       focused = true;
-      // keep the focused card fully in view (native scroll handles most of it)
-      const item = (e.target as HTMLElement).closest('.marquee__item');
-      if (item) item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      const item = (e.target as HTMLElement).closest<HTMLElement>('.marquee__item');
+      if (!item || !live()) return;
+      // rotate the ring so the focused card leads, fully in view
+      let guard = track.children.length;
+      while (first() !== item && guard-- > 0) track.appendChild(first());
+      offset = 0;
+      place();
+      m.scrollLeft = 0; // undo the browser's own scroll-into-view on the clipped box
     });
     m.addEventListener('focusout', () => { focused = false; schedule(); });
 
     new IntersectionObserver((entries) => {
       entries.forEach((en) => { inView = en.isIntersecting; schedule(); });
     }, { threshold: 0.05 }).observe(m);
+    new ResizeObserver(() => { if (live()) cover(); }).observe(m);
 
-    reduced.addEventListener('change', schedule);
-    noHover.addEventListener('change', schedule);
+    reduced.addEventListener('change', sync);
+    noHover.addEventListener('change', sync);
   });
 </script>
 <style>
-  /* full-bleed auto-scrolling marquee — a real scroll container advanced by
-     the rAF runtime above (no transform animation: WebKit blanks oversized
-     composited layers). Two identical groups; the runtime wraps scrollLeft
-     by one group width for a seamless loop. Hover/focus pause in JS. */
+  /* full-bleed auto-scrolling marquee — a ring of cards translated by the
+     runtime above. Without the runtime (touch / reduced-motion) it is a plain
+     swipeable row. Hover/focus pause in JS. */
   .marquee { overflow-x: auto; scrollbar-width: none; }
   .marquee::-webkit-scrollbar { display: none; }
-  .marquee__track { display: flex; width: max-content; }
-  .marquee__group {
-    display: flex; align-items: stretch; gap: 1.25rem;
-    list-style: none; margin: 0; padding: .5rem 1.25rem .75rem 0;
+  .marquee--live { overflow: hidden; }
+  .marquee__track {
+    display: flex; align-items: stretch; gap: 1.25rem; width: max-content;
+    list-style: none; margin: 0; padding: .5rem 0 .75rem;
   }
-  .marquee__item { flex: 0 0 clamp(17rem, 26vw, 21rem); display: flex; }
-  /* no auto-scroll on touch (WCAG 2.2.2) or reduced-motion — the runtime
-     checks the same queries; it's a plain swipeable row, so no loop copy */
-  @media (prefers-reduced-motion: reduce), (hover: none) {
-    .marquee__group[aria-hidden='true'] { display: none; }
-  }
+  /* explicit width (not just flex-basis) so the card's ASCII art can't inflate
+     the row's intrinsic width in WebKit */
+  .marquee__item { flex: 0 0 auto; width: clamp(17rem, 26vw, 21rem); min-width: 0; display: flex; }
 </style>
